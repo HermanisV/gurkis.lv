@@ -56,7 +56,25 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
 
 ---
 
-## 3. Repository Architecture (Jekyll on GitHub Pages)
+## 3. Recipe Content Structure & Inline Amounts Policy
+
+1. **No Backstory or Fluff**
+   - Never include blog backstories, personal anecdotes, SEO filler, or lengthy introductions.
+   - A recipe page must contain ONLY:
+     - A concise 1–2 sentence `description` in the frontmatter.
+     - The structured `ingredients` list.
+     - The numbered preparation steps.
+     - Optional short, practical kitchen notes under `## Padomi` (storage, substitutions, doneness cues).
+
+2. **Ingredients = What to Prepare | Instructions = What & How Much to Add**
+   - The **Ingredients list** exists so the cook knows what to gather and weigh out beforehand.
+   - The **Instructions** must be completely self-contained while cooking: **every step that mentions adding or using an ingredient MUST include its exact metric amount in bold** right in the sentence (e.g., `Bļodā liek **230 g** majonēzes, pielej **60 ml** ābolu etiķa un pievieno **25 g** brūnā cukura.`).
+   - The cook must NEVER have to scroll back and forth between the instructions and the ingredient list to check how much of an ingredient to add.
+   - If an ingredient is divided across multiple steps, state the total in the `ingredients` list and state the exact portion used in each respective instruction step (e.g., `Pievieno pusi (**250 ml**) piena...` and later `Iemaisa atlikušos **250 ml** piena...`).
+
+---
+
+## 4. Repository Architecture (Jekyll on GitHub Pages)
 
 - `_config.yml`: Main Jekyll configuration defining the `recipes` collection (`_recipes/`).
 - `_recipes/<slug>.md`: Individual recipe files. Adding or editing a file here automatically updates the recipe page, homepage catalog, and `search.json` upon build.

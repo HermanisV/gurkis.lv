@@ -67,15 +67,20 @@ Always convert volumetric amounts of these ingredients to **grams (`g`)**:
 | Peanut butter / Tahini (`zemesriekstu sviests / tahini`) | **`250 g`** | `16 g` |
 | Chocolate chips / Chopped chocolate (`šokolādes gabaliņi`) | **`170 g`** | `11 g` |
 
-### Sāls, Raugs un Irdinātāji (Salt, Yeast & Leaveners)
-| Ingredient (EN → LV) | 1 tbsp (`1 ēk`) | 1 tsp (`1 tk`) | Notes |
-| :--- | :--- | :--- | :--- |
-| Fine table / sea salt (`smalkais sāls`) | `18 g` | **`6 g`** | |
-| Diamond Crystal Kosher salt | `9 g` | **`3 g`** | Convert by weight! `1 tsp DC = 3 g smalkais sāls` |
-| Morton Kosher salt | `14 g` | **`5 g`** | |
-| Baking powder (`cepamais pulveris`) | `12 g` | **`4 g`** | |
-| Baking soda (`dzeramā soda`) | `15 g` | **`5 g`** | |
-| Instant / Active dry yeast (`sausais raugs`) | `9 g` | **`3 g`** | `1 standard packet = 7 g` |
+### Sāls, Raugs, Garšvielas un Mērces (Salt, Yeast, Spices & Condiments)
+| Ingredient (EN → LV) | 1 US Cup (`240 ml`) | 1 tbsp (`1 ēk`) | 1 tsp (`1 tk`) | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| Fine table / sea salt (`smalkais sāls`) | — | `18 g` | **`6 g`** | `1/2 tsp = 3 g` |
+| Diamond Crystal Kosher salt | — | `9 g` | **`3 g`** | Convert by weight! `1 tsp DC = 3 g smalkais sāls` |
+| Morton Kosher salt | — | `14 g` | **`5 g`** | |
+| Ground black pepper / spices (`maltie melnie pipari / garšvielas`) | — | `7 g` | **`2.5 g`** | `1/2 tsp = 1–1.5 g` |
+| Baking powder (`cepamais pulveris`) | — | `12 g` | **`4 g`** | |
+| Baking soda (`dzeramā soda`) | — | `15 g` | **`5 g`** | |
+| Instant / Active dry yeast (`sausais raugs`) | — | `9 g` | **`3 g`** | `1 standard packet = 7 g` |
+| Mayonnaise (`majonēze`) | **`230 g`** | **`15 g`** | `5 g` | Use `g` |
+| Mustard, Dijon / spicy brown (`sinepes`) | **`250 g`** | **`15 g`** | `5 g` | Use `g` |
+| Prepared horseradish (`sagatavoti mārrutki`) | **`240 g`** | **`15 g`** | **`5 g`** | Use `g` |
+| Ketchup / Tomato paste (`kečups / tomātu pasta`) | **`240 g` / `260 g`** | **`15 g` / `16 g`** | `5 g` | Use `g` |
 
 ### Dārzeņi un Augļi (Produce Weight Approximations)
 When a recipe specifies volumetric produce (e.g., "1 cup chopped onion") or vague counts, include approximate weight in grams:

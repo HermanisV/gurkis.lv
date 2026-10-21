@@ -47,11 +47,16 @@ Follow this step-by-step procedure whenever the user provides a recipe (via chat
 
 ---
 
-## Step 3: Translate & Adapt into Idiomatic Latvian
+## Step 3: Translate & Adapt into Idiomatic Latvian (Zero Fluff + Inline Amounts)
 
-1. Translate the title, short description, ingredient names, group headings, and step-by-step instructions into natural Latvian.
-2. Use imperative 2nd-person singular verb forms in preparation steps (e.g., *Uzkarsē cepeškrāsni...*, *Sajauc miltus ar sāli...*, *Cep 25 minūtes...*) for clear, concise kitchen reading.
-3. Assign 1–2 primary categories from the standard site categories:
+1. **Zero Backstory**: Omit all blog stories, history, or filler text. Keep only the ingredients, the numbered preparation steps, and concise practical storage/serving notes (`## Padomi`).
+2. **Translate to Idiomatic Latvian**: Translate the title, short description, ingredient names, group headings, and step-by-step instructions into natural Latvian. Use clear cooking verb forms (e.g., *Uzkarsē cepeškrāsni...*, *Sajauc...*, *Pievieno...*).
+3. **Mandatory Inline Ingredient Amounts in Instructions**:
+   - The **Ingredients list** tells the user what to prepare; the **Instructions** tell the user what and how much to add.
+   - **Every instruction step that mentions adding or combining an ingredient MUST include its metric amount in bold** (e.g., `Vidējā bļodā liek **230 g** majonēzes, pielej **60 ml** ābolu etiķa, **5 ml (1 tk)** citrona sulas un pievieno **25 g (2 ēk)** brūnā cukura...`).
+   - Never write vague steps like *"Add the sugar, mustard, and spices"* without repeating their exact amounts in that step—the reader must never need to scroll back to the ingredient list while cooking.
+   - Use decimals (e.g., `0.5 tk`, `1.5 g`) rather than slash fractions (`1/2`) inside `amount` and bolded instruction amounts (`**...**`), because the interactive portion scaler (`0.5×`, `1×`, `2×`, `3×`) automatically multiplies both the ingredient panel amounts and the bolded inline amounts in the instructions!
+4. Assign 1–2 primary categories from the standard site categories:
    - `Brokastis`
    - `Zupas`
    - `Pamatēdieni`
@@ -59,7 +64,7 @@ Follow this step-by-step procedure whenever the user provides a recipe (via chat
    - `Konditoreja un Deserti`
    - `Mērces un Marinādes`
    - `Dzērieni`
-4. Assign 2–6 lowercase Latvian tags (`tags`) covering main ingredients or cooking method (e.g., `vista`, `cepeškrāsns`, `ātri`, `veģetārs`, `biezpiens`).
+5. Assign 2–6 lowercase Latvian tags (`tags`) covering main ingredients or cooking method (e.g., `vista`, `cepeškrāsns`, `ātri`, `veģetārs`, `biezpiens`, `mērce`, `grils`).
 
 ---
 

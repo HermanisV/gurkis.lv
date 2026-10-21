@@ -32,8 +32,9 @@ ingredients:
 ---
 
 1. Uzkarsē cepeškrāsni līdz **200 °C** (augšas un apakšas režīmā).
-2. Nosusini vistas šķiņķīšus ar papīra dvieli, apslaki ar **15 ml** olīveļļas un vienmērīgi ierīvē ar sāli un garšvielām.
+2. Nosusini **600 g** vistas šķiņķīšu ar papīra dvieli, apslaki ar **15 ml (1 ēk)** olīveļļas un vienmērīgi ierīvē ar **6 g (1 tk)** sāls.
 3. Liec cepamajā traukā un cep **25–30 minūtes**, līdz gaļa ir zeltaina un sulīga (iekšējā temperatūra sasniedz **75 °C**).
+4. Tikmēr mazā bļodiņā sajauc **150 g** skābā krējuma ar **10 g (2 daiviņām)** smalki sarīvēta ķiploka un pasniedz kopā ar silto vistu.
 
 ## Padomi
 

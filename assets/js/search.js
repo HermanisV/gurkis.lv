@@ -136,6 +136,22 @@
     const servingsEl = document.getElementById("current-servings");
     const scaleBtns = recipePage.querySelectorAll(".scale-btn");
     const amountEls = recipePage.querySelectorAll(".ingredient-amount");
+    const instructionEl = document.getElementById("recipe-instructions");
+
+    // Identify inline bolded ingredient amounts in instructions (e.g., "230 g", "60 ml", "5 ml (1 tk)")
+    // while ignoring temperatures (°C) and durations (min, sek, stund, nedēļ)
+    const inlineAmountEls = [];
+    if (instructionEl) {
+      instructionEl.querySelectorAll("strong").forEach((strongEl) => {
+        const txt = (strongEl.textContent || "").trim();
+        const hasUnit = /\b(g|kg|ml|l|tk|ēk|gab\.)(\b|$)/i.test(txt);
+        const isTempOrTime = /(°\s*C|min|sek|stund|dien|nedēļ)/i.test(txt);
+        if (hasUnit && !isTempOrTime && /\d/.test(txt)) {
+          strongEl.dataset.baseAmount = txt;
+          inlineAmountEls.push(strongEl);
+        }
+      });
+    }
 
     function formatScaledNumber(num) {
       const rounded = Math.round(num * 10) / 10;
@@ -144,7 +160,7 @@
 
     function scaleAmountString(rawStr, factor) {
       if (!rawStr || factor === 1) return rawStr;
-      // Scale leading numeric value (and optional parenthetical spoon numbers)
+      // Scale numeric values (excluding fractions like 1/2 which we write as 0.5 or decimal)
       return rawStr.replace(/(\d+(?:[.,]\d+)?)/g, (match) => {
         const val = parseFloat(match.replace(",", "."));
         if (isNaN(val)) return match;
@@ -163,6 +179,11 @@
         }
 
         amountEls.forEach((el) => {
+          const base = el.dataset.baseAmount || "";
+          el.textContent = scaleAmountString(base, factor);
+        });
+
+        inlineAmountEls.forEach((el) => {
           const base = el.dataset.baseAmount || "";
           el.textContent = scaleAmountString(base, factor);
         });
