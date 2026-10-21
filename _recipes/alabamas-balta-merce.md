@@ -45,3 +45,4 @@ ingredients:
 
 - **Pielietojums:** Pārlej vai apzied ar šo mērci tikko no grila vai kūpinātavas noņemtu karstu vistu, izmanto kā mērcīti grilētai gaļai vai kā bāzi kāpostu salātiem (*coleslaw*).
 - **Uzglabāšana:** Slēgtā traukā ledusskapī mērce saglabājas svaiga līdz **2 nedēļām** (pirms lietošanas samaisi).
+
