@@ -1,0 +1,104 @@
+---
+layout: default
+---
+
+<section class="hero-search">
+  <h1 class="hero-title">Ko šodien gatavosim?</h1>
+  <p class="hero-subtitle">Meklē pēc ēdiena nosaukuma, sastāvdaļas (piem., <em>biezpiens</em>, <em>vista</em>, <em>ķiploks</em>) vai atslēgvārda.</p>
+
+  <div class="search-box-wrapper">
+    <input
+      type="search"
+      id="recipe-search-input"
+      class="search-input"
+      placeholder="Meklēt recepti vai sastāvdaļu..."
+      autocomplete="off"
+      aria-label="Meklēt recepti vai sastāvdaļu"
+    >
+    <button type="button" id="search-clear-btn" class="search-clear" hidden aria-label="Notīrīt meklēšanu">&times;</button>
+  </div>
+
+  {% assign all_categories = "" | split: "" %}
+  {% for r in site.recipes %}
+    {% for c in r.categories %}
+      {% unless all_categories contains c %}
+        {% assign all_categories = all_categories | push: c %}
+      {% endunless %}
+    {% endfor %}
+  {% endfor %}
+
+  <div class="category-pills" id="category-filter-bar" role="tablist" aria-label="Recepšu kategorijas">
+    <button type="button" class="category-pill active" data-category="all">Visas ({{ site.recipes | size }})</button>
+    {% for cat in all_categories %}
+      <button type="button" class="category-pill" data-category="{{ cat }}">{{ cat }}</button>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="catalog-section">
+  <div class="catalog-status">
+    <span id="recipe-count-label">Rāda visas {{ site.recipes | size }} receptes</span>
+  </div>
+
+  {% assign sorted_recipes = site.recipes | sort: "date" | reverse %}
+
+  <div class="recipe-cards-grid" id="recipe-catalog-grid">
+    {% for recipe in sorted_recipes %}
+      {% assign ing_names = "" %}
+      {% for grp in recipe.ingredients %}
+        {% for itm in grp.items %}
+          {% assign ing_names = ing_names | append: " " | append: itm.item %}
+        {% endfor %}
+      {% endfor %}
+
+      <article
+        class="recipe-card"
+        data-url="{{ recipe.url | relative_url }}"
+        data-categories="{{ recipe.categories | join: '|' }}"
+        data-tags="{{ recipe.tags | join: ' ' }}"
+        data-title="{{ recipe.title | escape }}"
+        data-description="{{ recipe.description | escape }}"
+        data-ingredients="{{ ing_names | strip | escape }}"
+      >
+        <div class="card-top">
+          <div class="card-categories">
+            {% for cat in recipe.categories %}
+              <span class="badge badge-category">{{ cat }}</span>
+            {% endfor %}
+          </div>
+          <h2 class="card-title">
+            <a href="{{ recipe.url | relative_url }}">{{ recipe.title }}</a>
+          </h2>
+          {% if recipe.description %}
+            <p class="card-description">{{ recipe.description }}</p>
+          {% endif %}
+        </div>
+
+        <div class="card-footer">
+          <div class="card-times">
+            {% assign total_time = recipe.prep_time | default: 0 | plus: recipe.cook_time | default: 0 %}
+            {% if total_time > 0 %}
+              <span class="card-meta-pill">⏱ {{ total_time }} min</span>
+            {% endif %}
+            {% if recipe.servings %}
+              <span class="card-meta-pill">🍽 {{ recipe.servings }} porc.</span>
+            {% endif %}
+          </div>
+          {% if recipe.tags and recipe.tags.size > 0 %}
+            <div class="card-tags">
+              {% for tag in recipe.tags limit:4 %}
+                <span class="tag-chip">#{{ tag }}</span>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <div id="empty-search-state" class="empty-state" hidden>
+    <p>Nekas netika atrasts pēc šī meklējuma. Pamēģini citu atslēgvārdu vai kategoriju!</p>
+    <button type="button" id="reset-filters-btn" class="btn-secondary">Rādīt visas receptes</button>
+  </div>
+</section>
+

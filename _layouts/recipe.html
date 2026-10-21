@@ -1,0 +1,104 @@
+---
+layout: default
+---
+
+<article class="recipe-page" data-base-servings="{{ page.servings | default: 4 }}">
+  <div class="recipe-breadcrumb">
+    <a href="{{ '/' | relative_url }}">&larr; Atpakaļ uz recepšu katalogu</a>
+  </div>
+
+  <header class="recipe-header">
+    <div class="recipe-badges">
+      {% for cat in page.categories %}
+        <a href="{{ '/' | relative_url }}?kategorija={{ cat | uri_escape }}" class="badge badge-category">{{ cat }}</a>
+      {% endfor %}
+      {% for tag in page.tags %}
+        <span class="badge badge-tag">#{{ tag }}</span>
+      {% endfor %}
+    </div>
+
+    <h1 class="recipe-title">{{ page.title }}</h1>
+
+    {% if page.description %}
+      <p class="recipe-lead">{{ page.description }}</p>
+    {% endif %}
+
+    <div class="recipe-meta-bar">
+      {% if page.prep_time %}
+      <div class="meta-item">
+        <span class="meta-label">Sagatavošana</span>
+        <span class="meta-value">{{ page.prep_time }} min</span>
+      </div>
+      {% endif %}
+      {% if page.cook_time %}
+      <div class="meta-item">
+        <span class="meta-label">Gatavošana</span>
+        <span class="meta-value">{{ page.cook_time }} min</span>
+      </div>
+      {% endif %}
+      {% if page.prep_time and page.cook_time %}
+      <div class="meta-item">
+        <span class="meta-label">Kopējais laiks</span>
+        <span class="meta-value">{{ page.prep_time | plus: page.cook_time }} min</span>
+      </div>
+      {% endif %}
+      {% if page.servings %}
+      <div class="meta-item">
+        <span class="meta-label">Porcijas</span>
+        <span class="meta-value"><span id="current-servings">{{ page.servings }}</span></span>
+      </div>
+      {% endif %}
+      {% if page.source_url and page.source_url != "" %}
+      <div class="meta-item">
+        <span class="meta-label">Avots</span>
+        <span class="meta-value">
+          <a href="{{ page.source_url }}" target="_blank" rel="noopener noreferrer">
+            {{ page.source_name | default: "Oriģinālā recepte ↗" }}
+          </a>
+        </span>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+
+  <div class="recipe-grid">
+    <aside class="recipe-ingredients-panel">
+      <div class="panel-header">
+        <h2>Sastāvdaļas</h2>
+        <div class="scale-controls" role="group" aria-label="Mainīt porciju daudzumu">
+          <button type="button" class="scale-btn" data-scale="0.5">0.5×</button>
+          <button type="button" class="scale-btn active" data-scale="1">1×</button>
+          <button type="button" class="scale-btn" data-scale="2">2×</button>
+          <button type="button" class="scale-btn" data-scale="3">3×</button>
+        </div>
+      </div>
+      <p class="panel-hint">Uzklikšķini uz sastāvdaļas, lai atzīmētu kā sagatavotu.</p>
+
+      {% for group in page.ingredients %}
+        <div class="ingredient-group">
+          {% if group.group and group.group != "" %}
+            <h3 class="ingredient-group-title">{{ group.group }}</h3>
+          {% endif %}
+          <ul class="ingredient-list">
+            {% for ing in group.items %}
+              <li class="ingredient-row" tabindex="0">
+                <span class="ingredient-check" aria-hidden="true"></span>
+                <span class="ingredient-amount" data-base-amount="{{ ing.amount | escape }}">{{ ing.amount }}</span>
+                <span class="ingredient-name">{{ ing.item }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    </aside>
+
+    <section class="recipe-instructions-panel">
+      <h2>Pagatavošana</h2>
+      <p class="panel-hint">Uzklikšķini uz soļa, lai atzīmētu kā paveiktu.</p>
+      <div class="recipe-content" id="recipe-instructions">
+        {{ content }}
+      </div>
+    </section>
+  </div>
+</article>
+

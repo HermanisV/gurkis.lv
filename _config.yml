@@ -1,0 +1,28 @@
+title: "Gurķis LV"
+subtitle: "Personīgais recepšu katalogs — precīzi svari gramos un pārbaudītas garšas"
+description: "Manas iecienītākās ēdienu gatavošanas receptes latviešu valodā ar precīziem mērījumiem gramos un mililitros."
+lang: "lv"
+url: ""
+baseurl: ""
+
+markdown: kramdown
+
+collections:
+  recipes:
+    output: true
+    permalink: /receptes/:name/
+
+defaults:
+  - scope:
+      path: ""
+      type: "recipes"
+    values:
+      layout: "recipe"
+
+exclude:
+  - ".agents/"
+  - "AGENTS.md"
+  - "README.md"
+  - "Gemfile"
+  - "Gemfile.lock"
+
