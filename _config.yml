@@ -3,6 +3,19 @@ subtitle: "Personīgais recepšu katalogs — precīzi svari gramos un pārbaud�
 description: "Manas iecienītākās ēdienu gatavošanas receptes latviešu valodā ar precīziem mērījumiem gramos un mililitros."
 lang: "lv"
 
+github_repo: "HermanisV/gurkis.lv"
+github_branch: "main"
+
+comments:
+  enabled: true
+  provider: "utterances" # "utterances" (GitHub Issues) vai "giscus" (GitHub Discussions)
+  issue_term: "pathname"
+  label: "receptes-piezimes"
+  theme: "github-light"
+  giscus_repo_id: ""
+  giscus_category: "Receptes"
+  giscus_category_id: ""
+
 markdown: kramdown
 
 collections:

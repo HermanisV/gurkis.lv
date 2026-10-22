@@ -606,6 +606,179 @@
         });
       });
     }
+
+    // 3. Live Git Commit Version History (via GitHub REST API)
+    const historyDetails = document.getElementById("recipe-history-details");
+    const historyList = document.getElementById("recipe-history-list");
+    const historyStatus = document.getElementById("recipe-history-status");
+    const versionBadge = document.getElementById("recipe-version-badge");
+
+    if (historyDetails && historyList && historyStatus) {
+      const repo = historyDetails.dataset.repo || "HermanisV/gurkis.lv";
+      const branch = historyDetails.dataset.branch || "main";
+      const recipePath = historyDetails.dataset.recipePath || "";
+      const cacheKey = `gurkis_commits_${repo}_${branch}_${recipePath}`;
+      const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+      function formatLatvianDate(isoString) {
+        if (!isoString) return "";
+        const d = new Date(isoString);
+        if (isNaN(d.getTime())) return isoString;
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}.`;
+      }
+
+      function renderCommits(commits) {
+        if (!Array.isArray(commits) || commits.length === 0) {
+          historyStatus.textContent =
+            "Šai receptei GitHub repozitorijā vēl nav atrasta publiska izmaiņu vēsture.";
+          historyStatus.hidden = false;
+          historyList.hidden = true;
+          return;
+        }
+
+        const total = commits.length;
+        if (versionBadge) {
+          versionBadge.textContent =
+            total === 1 ? "1 versija" : `${total} versijas`;
+          versionBadge.hidden = false;
+        }
+
+        historyList.innerHTML = "";
+        commits.forEach((entry, idx) => {
+          const sha = entry.sha || "";
+          const shortSha = sha.slice(0, 7);
+          const commitObj = entry.commit || {};
+          const rawMessage = (commitObj.message || "Izmaiņas receptē").trim();
+          const lines = rawMessage.split(/\r?\n/);
+          const headline = lines[0];
+          const bodyText = lines.slice(1).join("\n").trim();
+          const authorName =
+            (commitObj.author && commitObj.author.name) ||
+            (entry.author && entry.author.login) ||
+            "Autors";
+          const commitDate =
+            commitObj.author && commitObj.author.date
+              ? formatLatvianDate(commitObj.author.date)
+              : "";
+          const commitUrl =
+            entry.html_url || `https://github.com/${repo}/commit/${sha}`;
+          const versionNum = total - idx;
+
+          const li = document.createElement("li");
+          li.className = "history-item";
+
+          const headerRow = document.createElement("div");
+          headerRow.className = "history-item-header";
+
+          const leftMeta = document.createElement("div");
+          leftMeta.className = "history-item-meta";
+
+          const verTag = document.createElement("span");
+          verTag.className = "history-version-pill";
+          verTag.textContent = `v${versionNum}`;
+          leftMeta.appendChild(verTag);
+
+          if (commitDate) {
+            const dateSpan = document.createElement("time");
+            dateSpan.className = "history-date";
+            dateSpan.dateTime = commitObj.author.date;
+            dateSpan.textContent = commitDate;
+            leftMeta.appendChild(dateSpan);
+          }
+
+          const authorSpan = document.createElement("span");
+          authorSpan.className = "history-author";
+          authorSpan.textContent = `· ${authorName}`;
+          leftMeta.appendChild(authorSpan);
+
+          const shaLink = document.createElement("a");
+          shaLink.className = "history-sha-link";
+          shaLink.href = commitUrl;
+          shaLink.target = "_blank";
+          shaLink.rel = "noopener noreferrer";
+          shaLink.title = "Skatīt konkrētās izmaiņas (diff) GitHub";
+          shaLink.textContent = `${shortSha} ↗`;
+
+          headerRow.appendChild(leftMeta);
+          headerRow.appendChild(shaLink);
+
+          const msgEl = document.createElement("div");
+          msgEl.className = "history-message";
+          msgEl.textContent = headline;
+
+          li.appendChild(headerRow);
+          li.appendChild(msgEl);
+
+          if (bodyText) {
+            const bodyEl = document.createElement("pre");
+            bodyEl.className = "history-message-body";
+            bodyEl.textContent = bodyText;
+            li.appendChild(bodyEl);
+          }
+
+          historyList.appendChild(li);
+        });
+
+        historyStatus.hidden = true;
+        historyList.hidden = false;
+      }
+
+      async function loadCommitHistory() {
+        if (!recipePath) {
+          historyStatus.textContent = "Receptes faila ceļš nav norādīts.";
+          return;
+        }
+
+        // Check sessionStorage cache first
+        try {
+          const cachedRaw = sessionStorage.getItem(cacheKey);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+              renderCommits(cached.data);
+              return;
+            }
+          }
+        } catch (_e) {
+          // Ignore sessionStorage errors in private browsing
+        }
+
+        const apiUrl = `https://api.github.com/repos/${repo}/commits?path=${encodeURIComponent(
+          recipePath
+        )}&sha=${encodeURIComponent(branch)}&per_page=15`;
+
+        try {
+          const response = await fetch(apiUrl, {
+            headers: {
+              Accept: "application/vnd.github+json"
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`GitHub API status ${response.status}`);
+          }
+
+          const data = await response.json();
+          try {
+            sessionStorage.setItem(
+              cacheKey,
+              JSON.stringify({ timestamp: Date.now(), data: data })
+            );
+          } catch (_e) {
+            // Ignore quota errors
+          }
+
+          renderCommits(data);
+        } catch (_err) {
+          historyStatus.innerHTML = `Neizdevās automātiski ielādēt versiju sarakstu no GitHub API. <a href="https://github.com/${repo}/commits/${branch}/${recipePath}" target="_blank" rel="noopener noreferrer">Atvērt vēsturi GitHub ↗</a>`;
+          historyStatus.hidden = false;
+          historyList.hidden = true;
+        }
+      }
+
+      loadCommitHistory();
+    }
   }
 })();
 
