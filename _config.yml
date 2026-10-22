@@ -21,6 +21,7 @@ exclude:
   - ".agents/"
   - ".github/"
   - ".githooks/"
+  - ".gitattributes"
   - "AGENTS.md"
   - "README.md"
   - "Gemfile"
