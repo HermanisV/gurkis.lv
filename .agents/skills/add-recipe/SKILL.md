@@ -61,6 +61,7 @@ Follow this step-by-step procedure whenever the user provides a recipe (via chat
    - `Zupas`
    - `Pamatēdieni`
    - `Sacepums`
+   - `Mīkla`
    - `Salāti un Uzkodas`
    - `Konditoreja un Deserti`
    - `Mērces un Marinādes`

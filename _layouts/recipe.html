@@ -61,6 +61,183 @@ layout: default
     </div>
   </header>
 
+  {% if page.calculator == "pizza_dough" %}
+  <section class="pizza-calculator" id="pizza-calculator" aria-label="Picas mīklas kalkulators">
+    <div class="calc-header">
+      <div>
+        <h2 class="calc-title">🍕 Picas mīklas kalkulators</h2>
+        <p class="calc-subtitle">Pielāgo picu skaitu, izmēru, hidratāciju un raudzēšanas metodi — sastāvdaļu saraksts un pagatavošanas soļi zemāk pārrēķināsies automātiski.</p>
+      </div>
+      <div class="calc-presets" role="group" aria-label="Kalkulatora priekšiestatījumi">
+        <button type="button" class="calc-preset-btn active" data-preset="hybrid">Hibrīda / Ierauga (Noklusējums)</button>
+        <button type="button" class="calc-preset-btn" data-preset="sugarspunrun">Ātrā mājas pica (Sugar Spun Run)</button>
+        <button type="button" class="calc-preset-btn" data-preset="yeast100">Tikai raugs (100%)</button>
+        <button type="button" class="calc-preset-btn" data-preset="sourdough100">Tikai ieraugs (0%)</button>
+        <button type="button" class="calc-preset-btn" data-preset="neapolitan">Neapoles stila</button>
+      </div>
+    </div>
+
+    <div class="calc-cards-grid">
+      <!-- 1. Pizza Setup -->
+      <div class="calc-card">
+        <h3 class="calc-card-title">1. Picas iestatījumi</h3>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-num-pizzas">Picu skaits</label>
+            <span class="calc-unit-badge">gab.</span>
+          </div>
+          <input type="number" id="calc-num-pizzas" class="calc-input" min="1" max="50" step="1" value="6">
+        </div>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-diameter">Picas diametrs</label>
+            <span class="calc-unit-badge">cm</span>
+          </div>
+          <div class="calc-slider-group">
+            <input type="range" id="calc-diameter-range" class="calc-range" min="18" max="45" step="1" value="28" aria-label="Picas diametrs centimetros">
+            <input type="number" id="calc-diameter" class="calc-input calc-input-sm" min="15" max="60" step="1" value="28">
+          </div>
+        </div>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-factor">Biezuma koeficients (g/cm²)</label>
+            <span class="calc-unit-badge" id="calc-factor-label">0.45</span>
+          </div>
+          <div class="calc-slider-group">
+            <input type="range" id="calc-factor-range" class="calc-range" min="0.30" max="0.80" step="0.01" value="0.45" aria-label="Mīklas biezuma koeficients">
+            <input type="number" id="calc-factor" class="calc-input calc-input-sm" min="0.25" max="1.00" step="0.01" value="0.45">
+          </div>
+          <div class="calc-factor-chips">
+            <button type="button" class="factor-chip" data-factor="0.40">Neapoles (0.40)</button>
+            <button type="button" class="factor-chip active" data-factor="0.45">Klasiska (0.45)</button>
+            <button type="button" class="factor-chip" data-factor="0.68">Mājas / Pannas (0.68)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Dough Formulation -->
+      <div class="calc-card">
+        <h3 class="calc-card-title">2. Mīklas formula</h3>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-hydration">Hidratācija (ūdens pret miltiem)</label>
+            <span class="calc-unit-badge">%</span>
+          </div>
+          <div class="calc-slider-group">
+            <input type="range" id="calc-hydration-range" class="calc-range" min="50" max="85" step="1" value="62" aria-label="Hidratācija procentos">
+            <input type="number" id="calc-hydration" class="calc-input calc-input-sm" min="45" max="100" step="0.5" value="62">
+          </div>
+        </div>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-salt">Sāls (% no kopējās mīklas)</label>
+            <span class="calc-unit-badge">%</span>
+          </div>
+          <div class="calc-slider-group">
+            <input type="range" id="calc-salt-range" class="calc-range" min="0" max="4" step="0.1" value="2.5" aria-label="Sāls procentos">
+            <input type="number" id="calc-salt" class="calc-input calc-input-sm" min="0" max="10" step="0.1" value="2.5">
+          </div>
+        </div>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-oil">Olīveļļa (% no miltiem)</label>
+            <span class="calc-unit-badge">%</span>
+          </div>
+          <div class="calc-slider-group">
+            <input type="range" id="calc-oil-range" class="calc-range" min="0" max="15" step="0.5" value="0" aria-label="Olīveļļa procentos">
+            <input type="number" id="calc-oil" class="calc-input calc-input-sm" min="0" max="30" step="0.5" value="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Leavening Method -->
+      <div class="calc-card">
+        <h3 class="calc-card-title">3. Raudzēšanas metode</h3>
+
+        <div class="calc-field">
+          <div class="calc-label-row">
+            <label for="calc-yeastiness">Rauga īpatsvars (0% ieraugs ↔ 100% raugs)</label>
+            <span class="calc-unit-badge" id="calc-yeastiness-badge">50%</span>
+          </div>
+          <div class="calc-slider-group">
+            <input type="range" id="calc-yeastiness-range" class="calc-range" min="0" max="100" step="5" value="50" aria-label="Rauga īpatsvars procentos">
+            <input type="number" id="calc-yeastiness" class="calc-input calc-input-sm" min="0" max="100" step="1" value="50">
+          </div>
+        </div>
+
+        <div class="calc-field" id="calc-starter-pct-group">
+          <div class="calc-label-row">
+            <label for="calc-starter-pct">Ieraugs (% no kopējās mīklas)</label>
+            <span class="calc-unit-badge">%</span>
+          </div>
+          <input type="number" id="calc-starter-pct" class="calc-input" min="0" max="50" step="0.5" value="10">
+        </div>
+
+        <div class="calc-field" id="calc-starter-hyd-group">
+          <div class="calc-label-row">
+            <label for="calc-starter-hyd">Ierauga hidratācija</label>
+            <span class="calc-unit-badge">%</span>
+          </div>
+          <input type="number" id="calc-starter-hyd" class="calc-input" min="50" max="200" step="5" value="100">
+        </div>
+
+        <div class="calc-field" id="calc-target-yeast-group">
+          <div class="calc-label-row">
+            <label for="calc-target-yeast">Mērķa svaigais raugs (% no miltiem)</label>
+            <span class="calc-unit-badge">%</span>
+          </div>
+          <input type="number" id="calc-target-yeast" class="calc-input" min="0" max="10" step="0.05" value="0.30">
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculator Output Summary Bar -->
+    <div class="calc-summary-bar">
+      <div class="calc-summary-item">
+        <span class="calc-summary-label">Kopējais mīklas svars</span>
+        <span class="calc-summary-value" id="calc-out-total-dough">1662.5 g</span>
+      </div>
+      <div class="calc-summary-item">
+        <span class="calc-summary-label">1 picas bumbiņa</span>
+        <span class="calc-summary-value" id="calc-out-ball-weight">277.1 g</span>
+      </div>
+      <div class="calc-summary-item">
+        <span class="calc-summary-label">Kopā milti (ar ieraugu)</span>
+        <span class="calc-summary-value" id="calc-out-total-flour">999.7 g</span>
+      </div>
+      <div class="calc-summary-item">
+        <span class="calc-summary-label">Kopā ūdens (ar ieraugu)</span>
+        <span class="calc-summary-value" id="calc-out-total-water">619.8 g</span>
+      </div>
+    </div>
+
+    <details class="calc-tech-details">
+      <summary>Rādīt detalizētu tehnisko aprēķinu (precizitāte līdz 0.001 g)</summary>
+      <div class="calc-tech-grid">
+        <div><strong> Bumbiņas svars:</strong> <span id="tech-ball">277.088 g</span></div>
+        <div><strong>Kopējais mīklas svars:</strong> <span id="tech-total">1662.531 g</span></div>
+        <div><strong>Efektīvais svaigais raugs:</strong> <span id="tech-eff-yeast">0.15%</span></div>
+        <div><strong>Kopā milti:</strong> <span id="tech-flour">999.672 g</span></div>
+        <div><strong>Kopā ūdens:</strong> <span id="tech-water">619.796 g</span></div>
+        <div><strong>Ierauga milti / ūdens:</strong> <span id="tech-starter-split">41.563 g / 41.563 g</span></div>
+        <div><strong>Bļodā — Milti:</strong> <span id="tech-add-flour">958.108 g</span></div>
+        <div><strong>Bļodā — Ūdens:</strong> <span id="tech-add-water">578.233 g</span></div>
+        <div><strong>Bļodā — Sāls:</strong> <span id="tech-add-salt">41.563 g</span></div>
+        <div><strong>Bļodā — Olīveļļa:</strong> <span id="tech-add-oil">0.000 g</span></div>
+        <div><strong>Bļodā — Svaigais raugs:</strong> <span id="tech-add-yeast">1.500 g</span></div>
+        <div><strong>Bļodā — Ieraugs:</strong> <span id="tech-add-starter">83.127 g</span></div>
+        <div><strong>Kontroles kopsvars:</strong> <span id="tech-check">1662.531 g</span></div>
+      </div>
+    </details>
+  </section>
+  {% endif %}
+
   <div class="recipe-grid">
     <aside class="recipe-ingredients-panel">
       <div class="panel-header">
@@ -81,10 +258,10 @@ layout: default
           {% endif %}
           <ul class="ingredient-list">
             {% for ing in group.items %}
-              <li class="ingredient-row" tabindex="0">
+              <li class="ingredient-row" tabindex="0"{% if ing.calc_key %} data-calc-row="{{ ing.calc_key }}"{% endif %}>
                 <span class="ingredient-check" aria-hidden="true"></span>
-                <span class="ingredient-amount" data-base-amount="{{ ing.amount | escape }}">{{ ing.amount }}</span>
-                <span class="ingredient-name">{{ ing.item }}</span>
+                <span class="ingredient-amount" data-base-amount="{{ ing.amount | escape }}"{% if ing.calc_key %} data-calc-amount="{{ ing.calc_key }}"{% endif %}>{{ ing.amount }}</span>
+                <span class="ingredient-name"{% if ing.calc_key %} data-calc-name="{{ ing.calc_key }}"{% endif %}>{{ ing.item }}</span>
               </li>
             {% endfor %}
           </ul>
