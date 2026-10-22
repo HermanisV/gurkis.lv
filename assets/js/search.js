@@ -89,6 +89,8 @@
     }
 
     searchInput.addEventListener("input", applyFilters);
+    searchInput.addEventListener("keyup", applyFilters);
+    searchInput.addEventListener("search", applyFilters);
 
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
@@ -136,6 +138,9 @@
       if (matchingPill) {
         matchingPill.click();
       }
+    } else {
+      // Ensure initial state is synced (e.g. if Firefox restores search input text on reload)
+      applyFilters();
     }
   }
 
