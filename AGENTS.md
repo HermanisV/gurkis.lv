@@ -107,8 +107,13 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
 
 ---
 
-## 6. Available Agent Skills
+## 6. Available Agent Skills & Orchestration
 
-- **Adding or Updating Recipes**: Always read and follow [.agents/skills/add-recipe/SKILL.md](.agents/skills/add-recipe/SKILL.md) when the user provides a recipe via chat text, notes, images, or external web URLs.
-- **Maintaining the Site & Layouts**: Always read and follow [.agents/skills/maintain-site/SKILL.md](.agents/skills/maintain-site/SKILL.md) when modifying layouts, styles, search logic, or Jekyll configuration.
+- **Adding New Recipes (`add-recipe`)**: Read and follow [.agents/skills/add-recipe/SKILL.md](.agents/skills/add-recipe/SKILL.md) when the user provides a new recipe via chat text, notes, images, or external web URLs.
+- **Updating Existing Recipes (`update-recipe`)**: Read and follow [.agents/skills/update-recipe/SKILL.md](.agents/skills/update-recipe/SKILL.md) when the user asks to update, refine, or create a new version of an existing recipe in `_recipes/*.md` using natural language instructions.
+- **Gathering Update Requirements from Page Comments (`gather-recipe-comments`)**: Read and follow [.agents/skills/gather-recipe-comments/SKILL.md](.agents/skills/gather-recipe-comments/SKILL.md) (which runs `.agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1`) when the user asks to check or gather improvement notes/comments left on a recipe page.
+- **Orchestrating Comment-Driven Recipe Updates**: When the user asks to update a recipe based on comments left on its page (e.g., *"update `<slug>` recipe to new version following all the recommendations I've left in the comments of the newest version"*), **orchestrate both skills in sequence**:
+  1. Execute `gather-recipe-comments` first to fetch comments created since the newest commit version of `_recipes/<slug>.md` and synthesize actionable culinary requirements.
+  2. Pass those requirements into `update-recipe` to update both the frontmatter `ingredients:` list and bolded inline instruction amounts (`**...**`), validate, and push a `fix/<slug>` branch with a descriptive Latvian commit message for the version history timeline.
+- **Maintaining the Site & Layouts (`maintain-site`)**: Read and follow [.agents/skills/maintain-site/SKILL.md](.agents/skills/maintain-site/SKILL.md) when modifying layouts, styles, search logic, or Jekyll configuration.
 

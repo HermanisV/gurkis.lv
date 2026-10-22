@@ -1,14 +1,15 @@
 ---
 name: add-recipe
 description: >-
-  Use this skill whenever the user wants to add a new recipe or update an existing recipe
-  from chat input (notes, freeform text, photos) or from an external web URL/link.
-  Guides extraction, metric weight (grams) conversion, Latvian localization, Markdown generation, and validation.
+  Use this skill whenever the user wants to add a new recipe from chat input (notes, freeform
+  text, photos) or from an external web URL/link. Guides extraction, metric weight (grams)
+  conversion, Latvian localization, Markdown generation, and validation. (For updating an
+  existing recipe, use the update-recipe skill.)
 ---
 
-# Add or Update Recipe Workflow (`add-recipe`)
+# Add Recipe Workflow (`add-recipe`)
 
-Follow this step-by-step procedure whenever the user provides a recipe (via chat text, notes, or external web URL) to add to or update in the Gurķis LV catalog.
+Follow this step-by-step procedure whenever the user provides a new recipe (via chat text, notes, or external web URL) to add to the Gurķis LV catalog. If the user wants to update an existing recipe in `_recipes/*.md`, use [.agents/skills/update-recipe/SKILL.md](../update-recipe/SKILL.md) (and [.agents/skills/gather-recipe-comments/SKILL.md](../gather-recipe-comments/SKILL.md) if updating from page comments).
 
 ## Step 1: Acquire & Parse the Recipe Source
 
