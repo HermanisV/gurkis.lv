@@ -95,10 +95,9 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
      git checkout main
      git pull --ff-only origin main
      ```
-  2. Create a descriptive branch name automatically:
-     - Adding/editing recipes: `recipe/<slug>` (e.g., `recipe/kremigs-senu-brokolu-un-risu-sacepums`)
-     - Site features / UI updates: `feat/<short-topic>` (e.g., `feat/tag-filter`)
-     - Bug fixes / maintenance: `fix/<short-topic>` or `chore/<short-topic>`
+  2. Create a descriptive branch name automatically (**ONLY `feat/` and `fix/` prefixes are allowed**):
+     - Adding new recipes or site features: `feat/<slug>` (e.g., `feat/kremigs-senu-brokolu-un-risu-sacepums`, `feat/tag-filter`)
+     - Editing existing recipes or fixing bugs: `fix/<short-topic>` (e.g., `fix/category-filter`)
   3. Validate changes, stage, commit to the new branch, and push the branch to `origin`:
      ```powershell
      git push -u origin <branch-name>

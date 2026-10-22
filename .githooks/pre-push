@@ -1,15 +1,24 @@
 #!/usr/bin/env sh
 branch="$(git rev-parse --abbrev-ref HEAD)"
-if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
-  echo "ERROR: Direct pushes from '$branch' are forbidden."
-  echo "Push a feature/recipe branch instead and open a Pull Request on GitHub."
-  exit 1
-fi
+
+case "$branch" in
+  feat/*|fix/*)
+    ;;
+  *)
+    echo "ERROR: Invalid local branch '$branch'."
+    echo "Only 'feat/<name>' and 'fix/<name>' branches may be pushed."
+    exit 1
+    ;;
+esac
 
 while read local_ref local_sha remote_ref remote_sha; do
-  if [ "$remote_ref" = "refs/heads/main" ] || [ "$remote_ref" = "refs/heads/master" ]; then
-    echo "ERROR: Direct pushes to '$remote_ref' are forbidden."
-    echo "Push your branch to origin and merge via a Pull Request on GitHub."
-    exit 1
-  fi
+  case "$remote_ref" in
+    refs/heads/feat/*|refs/heads/fix/*)
+      ;;
+    *)
+      echo "ERROR: Pushing to '$remote_ref' is forbidden."
+      echo "Only 'refs/heads/feat/*' and 'refs/heads/fix/*' remote branches are allowed."
+      exit 1
+      ;;
+  esac
 done
