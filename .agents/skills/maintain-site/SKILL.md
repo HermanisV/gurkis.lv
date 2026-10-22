@@ -31,3 +31,10 @@ The repository is built natively by GitHub Pages using Jekyll:
    - **Checklists**: Clicking an ingredient row or instruction step toggles a completed state for easy tracking while cooking.
    - **Latvian Diacritic Normalization**: Search normalizes Latvian characters (`ā→a`, `č→c`, `ē→e`, `ģ→g`, `ī→i`, `ķ→k`, `ļ→l`, `ņ→n`, `š→s`, `ū→u`, `ž→z`) via `String.prototype.normalize('NFD').replace(/[\u0300-\u036f]/g, '')` so users can search with or without diacritics.
 
+## 3. Git Branching & Deployment Workflow
+
+- **Never commit or push directly to `main`**.
+- Create a dedicated branch (`feat/<topic>` or `fix/<topic>`) from latest `origin/main`, commit changes there, and push with `git push -u origin <branch-name>`.
+- Provide the branch name and PR creation link (`https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`) to the user.
+- Merging into `main` triggers `.github/workflows/deploy-pages.yml` to validate recipes, build Jekyll, and deploy to GitHub Pages.
+

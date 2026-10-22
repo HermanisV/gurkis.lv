@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+branch="$(git rev-parse --abbrev-ref HEAD)"
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "ERROR: Direct commits to '$branch' are forbidden."
+  echo "Create a new branch first (e.g. 'git checkout -b recipe/<slug>' or 'git checkout -b feat/<name>')."
+  exit 1
+fi
