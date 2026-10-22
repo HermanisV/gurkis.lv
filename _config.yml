@@ -19,6 +19,8 @@ defaults:
 
 exclude:
   - ".agents/"
+  - ".github/"
+  - ".githooks/"
   - "AGENTS.md"
   - "README.md"
   - "Gemfile"

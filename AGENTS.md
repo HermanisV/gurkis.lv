@@ -86,7 +86,29 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
 
 ---
 
-## 4. Available Agent Skills
+## 5. Git Branching & Pull Request Delivery Policy
+
+- **`main` is strictly protected**: NEVER commit or push directly to `main`.
+- **Every new recipe, edit, or site feature MUST be delivered on a dedicated branch**:
+  1. Sync with `main` before starting new work:
+     ```powershell
+     git checkout main
+     git pull --ff-only origin main
+     ```
+  2. Create a descriptive branch name automatically:
+     - Adding/editing recipes: `recipe/<slug>` (e.g., `recipe/kremigs-senu-brokolu-un-risu-sacepums`)
+     - Site features / UI updates: `feat/<short-topic>` (e.g., `feat/tag-filter`)
+     - Bug fixes / maintenance: `fix/<short-topic>` or `chore/<short-topic>`
+  3. Validate changes, stage, commit to the new branch, and push the branch to `origin`:
+     ```powershell
+     git push -u origin <branch-name>
+     ```
+  4. Provide the branch name and the direct GitHub Pull Request creation URL (`https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`) in your response so the user can review and merge the PR.
+- **Automated Deployment**: Once a PR is merged into `main`, the GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) automatically validates all recipes, builds the Jekyll site, and deploys it to GitHub Pages.
+
+---
+
+## 6. Available Agent Skills
 
 - **Adding or Updating Recipes**: Always read and follow [.agents/skills/add-recipe/SKILL.md](.agents/skills/add-recipe/SKILL.md) when the user provides a recipe via chat text, notes, images, or external web URLs.
 - **Maintaining the Site & Layouts**: Always read and follow [.agents/skills/maintain-site/SKILL.md](.agents/skills/maintain-site/SKILL.md) when modifying layouts, styles, search logic, or Jekyll configuration.
