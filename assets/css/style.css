@@ -891,11 +891,40 @@ body {
   gap: 0.65rem;
 }
 
+.version-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background-color: #fff8e6;
+  border: 1px solid #e6c875;
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.version-banner-text {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #5c4300;
+}
+
 .history-item {
   background-color: var(--bg-page);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.95rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.history-item.active-version {
+  border-color: var(--brand-primary);
+  background-color: #f4f9f5;
 }
 
 .history-item-header {
@@ -923,6 +952,15 @@ body {
   border-radius: 999px;
 }
 
+.history-active-badge {
+  background-color: var(--brand-primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+}
+
 .history-date {
   font-weight: 600;
   color: var(--text-main);
@@ -932,21 +970,47 @@ body {
   color: var(--text-muted);
 }
 
-.history-sha-link {
+.history-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.history-sha-btn {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--brand-primary);
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
-  padding: 0.12rem 0.45rem;
+  padding: 0.22rem 0.55rem;
   border-radius: 6px;
-  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.12s ease;
 }
 
-.history-sha-link:hover {
+.history-sha-btn:hover {
   border-color: var(--brand-primary);
   background-color: var(--bg-accent-subtle);
+}
+
+.history-sha-btn.is-active {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+}
+
+.history-diff-link {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  padding: 0.15rem 0.35rem;
+}
+
+.history-diff-link:hover {
+  color: var(--brand-primary);
+  text-decoration: underline;
 }
 
 .history-message {
@@ -987,6 +1051,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  font-family: inherit;
   font-size: 0.84rem;
   font-weight: 600;
   color: var(--brand-primary);
@@ -996,6 +1061,7 @@ body {
   border-radius: var(--radius-sm);
   text-decoration: none;
   white-space: nowrap;
+  cursor: pointer;
   transition: all 0.15s ease;
 }
 

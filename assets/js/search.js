@@ -144,30 +144,65 @@
     }
   }
 
-  // 2. Recipe Page Interactive Features (Portion Scaling, Pizza Calculator & Checklists)
+  // 2. Recipe Page Interactive Features (Portion Scaling, Pizza Calculator, Checklists & Version Switching)
   const recipePage = document.querySelector(".recipe-page");
   if (recipePage) {
-    const baseServings = parseFloat(recipePage.dataset.baseServings) || 4;
+    let baseServings = parseFloat(recipePage.dataset.baseServings) || 4;
     const servingsEl = document.getElementById("current-servings");
     const scaleBtns = recipePage.querySelectorAll(".scale-btn");
-    const amountEls = recipePage.querySelectorAll(".ingredient-amount");
+    const ingredientsGroupsEl = document.getElementById("recipe-ingredients-groups");
     const instructionEl = document.getElementById("recipe-instructions");
     const pizzaCalcEl = document.getElementById("pizza-calculator");
+    const titleEl = recipePage.querySelector(".recipe-title");
+    const leadEl = recipePage.querySelector(".recipe-lead");
 
-    // Identify inline bolded ingredient amounts in instructions (e.g., "230 g", "60 ml", "5 ml (1 tk)")
-    // while ignoring temperatures (°C) and durations (min, sek, stund, nedēļ)
-    const inlineAmountEls = [];
-    if (instructionEl) {
-      instructionEl.querySelectorAll("strong").forEach((strongEl) => {
-        const txt = (strongEl.textContent || "").trim();
-        const hasUnit = /\b(g|kg|ml|l|tk|ēk|gab\.)(\b|$)/i.test(txt);
-        const isTempOrTime = /(°\s*C|min|sek|stund|dien|nedēļ)/i.test(txt);
-        if (hasUnit && !isTempOrTime && /\d/.test(txt)) {
-          strongEl.dataset.baseAmount = txt;
-          inlineAmountEls.push(strongEl);
-        }
+    let amountEls = [];
+    let inlineAmountEls = [];
+
+    function bindInteractiveRecipeElements() {
+      amountEls = Array.from(recipePage.querySelectorAll(".ingredient-amount"));
+      inlineAmountEls = [];
+
+      if (instructionEl) {
+        instructionEl.querySelectorAll("strong").forEach((strongEl) => {
+          const txt = (strongEl.dataset.baseAmount || strongEl.textContent || "").trim();
+          const hasUnit = /\b(g|kg|ml|l|tk|ēk|gab\.)(\b|$)/i.test(txt);
+          const isTempOrTime = /(°\s*C|min|sek|stund|dien|nedēļ)/i.test(txt);
+          if (hasUnit && !isTempOrTime && /\d/.test(txt)) {
+            strongEl.dataset.baseAmount = txt;
+            inlineAmountEls.push(strongEl);
+          }
+        });
+      }
+
+      // Ingredient checklist toggle
+      recipePage.querySelectorAll(".ingredient-row").forEach((row) => {
+        if (row.dataset.boundCheck === "1") return;
+        row.dataset.boundCheck = "1";
+        row.addEventListener("click", () => {
+          row.classList.toggle("checked");
+        });
+        row.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            row.classList.toggle("checked");
+          }
+        });
       });
+
+      // Step checklist toggle
+      if (instructionEl) {
+        instructionEl.querySelectorAll("ol li").forEach((step) => {
+          if (step.dataset.boundStep === "1") return;
+          step.dataset.boundStep = "1";
+          step.addEventListener("click", () => {
+            step.classList.toggle("step-done");
+          });
+        });
+      }
     }
+
+    bindInteractiveRecipeElements();
 
     function formatScaledNumber(num) {
       const rounded = Math.round(num * 10) / 10;
@@ -181,6 +216,22 @@
         const val = parseFloat(match.replace(",", "."));
         if (isNaN(val)) return match;
         return formatScaledNumber(val * factor);
+      });
+    }
+
+    function applyCurrentScaleFactor(factor) {
+      if (servingsEl) {
+        servingsEl.textContent = formatScaledNumber(baseServings * factor);
+      }
+
+      amountEls.forEach((el) => {
+        const base = el.dataset.baseAmount || "";
+        el.textContent = scaleAmountString(base, factor);
+      });
+
+      inlineAmountEls.forEach((el) => {
+        const base = el.dataset.baseAmount || "";
+        el.textContent = scaleAmountString(base, factor);
       });
     }
 
@@ -566,59 +617,233 @@
           const factor = parseFloat(btn.dataset.scale) || 1;
           scaleBtns.forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
-
-          if (servingsEl) {
-            servingsEl.textContent = formatScaledNumber(baseServings * factor);
-          }
-
-          amountEls.forEach((el) => {
-            const base = el.dataset.baseAmount || "";
-            el.textContent = scaleAmountString(base, factor);
-          });
-
-          inlineAmountEls.forEach((el) => {
-            const base = el.dataset.baseAmount || "";
-            el.textContent = scaleAmountString(base, factor);
-          });
+          applyCurrentScaleFactor(factor);
         });
       });
     }
 
-    // Ingredient checklist toggle
-    recipePage.querySelectorAll(".ingredient-row").forEach((row) => {
-      row.addEventListener("click", () => {
-        row.classList.toggle("checked");
-      });
-      row.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          row.classList.toggle("checked");
-        }
-      });
-    });
-
-    // Step checklist toggle
-    const instructions = document.getElementById("recipe-instructions");
-    if (instructions) {
-      instructions.querySelectorAll("ol li").forEach((step) => {
-        step.addEventListener("click", () => {
-          step.classList.toggle("step-done");
-        });
-      });
-    }
-
-    // 3. Live Git Commit Version History (via GitHub REST API)
+    // 3. Live Git Commit Version History & Interactive Version Switching
     const historyDetails = document.getElementById("recipe-history-details");
     const historyList = document.getElementById("recipe-history-list");
     const historyStatus = document.getElementById("recipe-history-status");
     const versionBadge = document.getElementById("recipe-version-badge");
+    const versionBanner = document.getElementById("recipe-version-banner");
+    const versionBannerLabel = document.getElementById("recipe-version-banner-label");
+    const versionRestoreBtn = document.getElementById("recipe-version-restore-btn");
 
     if (historyDetails && historyList && historyStatus) {
       const repo = historyDetails.dataset.repo || "HermanisV/gurkis.lv";
       const branch = historyDetails.dataset.branch || "main";
       const recipePath = historyDetails.dataset.recipePath || "";
-      const cacheKey = `gurkis_commits_${repo}_${branch}_${recipePath}`;
-      const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+      const cacheKey = `gurkis_commits_v2_${repo}_${branch}_${recipePath}`;
+      const CACHE_TTL_MS = 60 * 1000; // 1 minute cache to stay fresh after merges
+
+      let loadedCommits = [];
+      let activeCommitSha = "";
+
+      function escapeHtml(str) {
+        return String(str || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function formatInlineMarkdown(text) {
+        let html = escapeHtml(text);
+        html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
+        html = html.replace(/`(.+?)`/g, "<code>$1</code>");
+        return html;
+      }
+
+      function renderMarkdownBody(md) {
+        const lines = String(md || "").replace(/\r\n/g, "\n").split("\n");
+        const out = [];
+        let inOl = false;
+        let inUl = false;
+
+        function closeLists() {
+          if (inOl) {
+            out.push("</ol>");
+            inOl = false;
+          }
+          if (inUl) {
+            out.push("</ul>");
+            inUl = false;
+          }
+        }
+
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) {
+            closeLists();
+            continue;
+          }
+
+          const h2Match = line.match(/^##\s+(.+)$/);
+          if (h2Match) {
+            closeLists();
+            out.push(`<h2>${formatInlineMarkdown(h2Match[1])}</h2>`);
+            continue;
+          }
+
+          const h3Match = line.match(/^###\s+(.+)$/);
+          if (h3Match) {
+            closeLists();
+            out.push(`<h3>${formatInlineMarkdown(h3Match[1])}</h3>`);
+            continue;
+          }
+
+          const olMatch = line.match(/^\d+\.\s+(.+)$/);
+          if (olMatch) {
+            if (inUl) {
+              out.push("</ul>");
+              inUl = false;
+            }
+            if (!inOl) {
+              out.push("<ol>");
+              inOl = true;
+            }
+            out.push(`<li>${formatInlineMarkdown(olMatch[1])}</li>`);
+            continue;
+          }
+
+          const ulMatch = line.match(/^[-*]\s+(.+)$/);
+          if (ulMatch) {
+            if (inOl) {
+              out.push("</ol>");
+              inOl = false;
+            }
+            if (!inUl) {
+              out.push("<ul>");
+              inUl = true;
+            }
+            out.push(`<li>${formatInlineMarkdown(ulMatch[1])}</li>`);
+            continue;
+          }
+
+          closeLists();
+          out.push(`<p>${formatInlineMarkdown(line)}</p>`);
+        }
+
+        closeLists();
+        return out.join("\n");
+      }
+
+      function stripYamlQuotes(val) {
+        const s = String(val || "").trim();
+        if (
+          (s.startsWith('"') && s.endsWith('"')) ||
+          (s.startsWith("'") && s.endsWith("'"))
+        ) {
+          return s.slice(1, -1);
+        }
+        return s;
+      }
+
+      function parseRecipeMarkdown(rawText) {
+        const match = String(rawText || "").match(
+          /^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/
+        );
+        if (!match) return null;
+
+        const yaml = match[1];
+        const body = match[2];
+
+        const titleMatch = yaml.match(/^title:\s*(.+)$/m);
+        const descMatch = yaml.match(/^description:\s*(.+)$/m);
+        const servMatch = yaml.match(/^servings:\s*(\d+(?:\.\d+)?)/m);
+
+        const groups = [];
+        const yamlLines = yaml.replace(/\r\n/g, "\n").split("\n");
+        let inIngredients = false;
+        let currentGroup = null;
+        let currentItem = null;
+
+        for (let i = 0; i < yamlLines.length; i++) {
+          const rawLine = yamlLines[i];
+          if (/^ingredients:\s*$/.test(rawLine)) {
+            inIngredients = true;
+            continue;
+          }
+          if (inIngredients && /^[a-zA-Z0-9_]+:/.test(rawLine)) {
+            inIngredients = false;
+            break;
+          }
+          if (!inIngredients) continue;
+
+          const groupMatch = rawLine.match(/^\s*-\s*group:\s*(.*)$/);
+          if (groupMatch) {
+            currentGroup = {
+              group: stripYamlQuotes(groupMatch[1]),
+              items: []
+            };
+            groups.push(currentGroup);
+            currentItem = null;
+            continue;
+          }
+
+          const amountMatch = rawLine.match(/^\s*-\s*amount:\s*(.*)$/);
+          if (amountMatch && currentGroup) {
+            currentItem = {
+              amount: stripYamlQuotes(amountMatch[1]),
+              item: "",
+              calc_key: ""
+            };
+            currentGroup.items.push(currentItem);
+            continue;
+          }
+
+          const itemMatch = rawLine.match(/^\s*item:\s*(.*)$/);
+          if (itemMatch && currentItem) {
+            currentItem.item = stripYamlQuotes(itemMatch[1]);
+            continue;
+          }
+
+          const calcKeyMatch = rawLine.match(/^\s*calc_key:\s*(.*)$/);
+          if (calcKeyMatch && currentItem) {
+            currentItem.calc_key = stripYamlQuotes(calcKeyMatch[1]);
+          }
+        }
+
+        return {
+          title: titleMatch ? stripYamlQuotes(titleMatch[1]) : "",
+          description: descMatch ? stripYamlQuotes(descMatch[1]) : "",
+          servings: servMatch ? parseFloat(servMatch[1]) : null,
+          ingredients: groups,
+          bodyHtml: renderMarkdownBody(body)
+        };
+      }
+
+      function renderIngredientsGroupsHtml(groups) {
+        return groups
+          .map((g) => {
+            const heading = g.group
+              ? `<h3 class="ingredient-group-title">${escapeHtml(g.group)}</h3>`
+              : "";
+            const rows = (g.items || [])
+              .map((ing) => {
+                const calcRowAttr = ing.calc_key
+                  ? ` data-calc-row="${escapeHtml(ing.calc_key)}"`
+                  : "";
+                const calcAmtAttr = ing.calc_key
+                  ? ` data-calc-amount="${escapeHtml(ing.calc_key)}"`
+                  : "";
+                const calcNameAttr = ing.calc_key
+                  ? ` data-calc-name="${escapeHtml(ing.calc_key)}"`
+                  : "";
+                return `<li class="ingredient-row" tabindex="0"${calcRowAttr}>
+                  <span class="ingredient-check" aria-hidden="true"></span>
+                  <span class="ingredient-amount" data-base-amount="${escapeHtml(ing.amount)}"${calcAmtAttr}>${escapeHtml(ing.amount)}</span>
+                  <span class="ingredient-name"${calcNameAttr}>${escapeHtml(ing.item)}</span>
+                </li>`;
+              })
+              .join("\n");
+            return `<div class="ingredient-group">${heading}<ul class="ingredient-list">${rows}</ul></div>`;
+          })
+          .join("\n");
+      }
 
       function formatLatvianDate(isoString) {
         if (!isoString) return "";
@@ -626,6 +851,109 @@
         if (isNaN(d.getTime())) return isoString;
         const pad = (n) => String(n).padStart(2, "0");
         return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}.`;
+      }
+
+      function updateActiveVersionHighlight() {
+        historyList.querySelectorAll(".history-item").forEach((li) => {
+          const isCurrent = li.dataset.sha === activeCommitSha;
+          li.classList.toggle("active-version", isCurrent);
+          const btn = li.querySelector(".history-sha-btn");
+          const stateBadge = li.querySelector(".history-active-badge");
+          if (btn) {
+            btn.classList.toggle("is-active", isCurrent);
+          }
+          if (stateBadge) {
+            stateBadge.hidden = !isCurrent;
+          }
+        });
+      }
+
+      async function switchToVersion(entry, versionNum, isLatest, options) {
+        const opts = options || {};
+        if (!entry || !entry.sha) return;
+
+        const sha = entry.sha;
+        const shortSha = sha.slice(0, 7);
+        const commitObj = entry.commit || {};
+        const commitDate =
+          commitObj.author && commitObj.author.date
+            ? formatLatvianDate(commitObj.author.date)
+            : "";
+
+        const rawUrl = `https://raw.githubusercontent.com/${repo}/${sha}/${recipePath}`;
+
+        try {
+          const resp = await fetch(rawUrl);
+          if (!resp.ok) {
+            throw new Error(`HTTP ${resp.status}`);
+          }
+          const rawMd = await resp.text();
+          const parsed = parseRecipeMarkdown(rawMd);
+          if (!parsed) {
+            throw new Error("Neizdevās nolasīt receptes struktūru");
+          }
+
+          if (titleEl && parsed.title) titleEl.textContent = parsed.title;
+          if (leadEl && parsed.description) leadEl.textContent = parsed.description;
+          if (parsed.servings && !pizzaCalcEl) {
+            baseServings = parsed.servings;
+          }
+          if (ingredientsGroupsEl && parsed.ingredients.length > 0 && !pizzaCalcEl) {
+            ingredientsGroupsEl.innerHTML = renderIngredientsGroupsHtml(parsed.ingredients);
+          }
+          if (instructionEl && !pizzaCalcEl) {
+            instructionEl.innerHTML = parsed.bodyHtml;
+          }
+
+          bindInteractiveRecipeElements();
+
+          // Re-apply active portion scale factor
+          if (!pizzaCalcEl) {
+            const activeScaleBtn = recipePage.querySelector(".scale-btn.active");
+            const factor = activeScaleBtn
+              ? parseFloat(activeScaleBtn.dataset.scale) || 1
+              : 1;
+            applyCurrentScaleFactor(factor);
+          }
+
+          activeCommitSha = sha;
+          updateActiveVersionHighlight();
+
+          // Update banner & URL parameter
+          const url = new URL(window.location.href);
+          if (isLatest) {
+            if (versionBanner) versionBanner.hidden = true;
+            url.searchParams.delete("versija");
+          } else {
+            if (versionBanner && versionBannerLabel) {
+              versionBannerLabel.textContent = `Tu šobrīd skaties vēsturisku receptes versiju: v${versionNum} (${shortSha}${commitDate ? " · " + commitDate : ""}).`;
+              versionBanner.hidden = false;
+            }
+            url.searchParams.set("versija", shortSha);
+          }
+          window.history.replaceState({}, "", url.toString());
+
+          if (opts.scrollToTop) {
+            recipePage.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        } catch (_err) {
+          // Fallback: if raw fetch fails, open commit on GitHub
+          window.open(
+            entry.html_url || `https://github.com/${repo}/commit/${sha}`,
+            "_blank",
+            "noopener"
+          );
+        }
+      }
+
+      if (versionRestoreBtn) {
+        versionRestoreBtn.addEventListener("click", () => {
+          if (loadedCommits.length > 0) {
+            switchToVersion(loadedCommits[0], loadedCommits.length, true, {
+              scrollToTop: true
+            });
+          }
+        });
       }
 
       function renderCommits(commits) {
@@ -637,7 +965,12 @@
           return;
         }
 
+        loadedCommits = commits;
         const total = commits.length;
+        if (!activeCommitSha) {
+          activeCommitSha = commits[0].sha || "";
+        }
+
         if (versionBadge) {
           versionBadge.textContent =
             total === 1 ? "1 versija" : `${total} versijas`;
@@ -664,9 +997,11 @@
           const commitUrl =
             entry.html_url || `https://github.com/${repo}/commit/${sha}`;
           const versionNum = total - idx;
+          const isLatest = idx === 0;
 
           const li = document.createElement("li");
           li.className = "history-item";
+          li.dataset.sha = sha;
 
           const headerRow = document.createElement("div");
           headerRow.className = "history-item-header";
@@ -676,8 +1011,14 @@
 
           const verTag = document.createElement("span");
           verTag.className = "history-version-pill";
-          verTag.textContent = `v${versionNum}`;
+          verTag.textContent = isLatest ? `v${versionNum} (Jaunākā)` : `v${versionNum}`;
           leftMeta.appendChild(verTag);
+
+          const activeTag = document.createElement("span");
+          activeTag.className = "history-active-badge";
+          activeTag.textContent = "Atvērta";
+          activeTag.hidden = sha !== activeCommitSha;
+          leftMeta.appendChild(activeTag);
 
           if (commitDate) {
             const dateSpan = document.createElement("time");
@@ -692,16 +1033,31 @@
           authorSpan.textContent = `· ${authorName}`;
           leftMeta.appendChild(authorSpan);
 
-          const shaLink = document.createElement("a");
-          shaLink.className = "history-sha-link";
-          shaLink.href = commitUrl;
-          shaLink.target = "_blank";
-          shaLink.rel = "noopener noreferrer";
-          shaLink.title = "Skatīt konkrētās izmaiņas (diff) GitHub";
-          shaLink.textContent = `${shortSha} ↗`;
+          const rightActions = document.createElement("div");
+          rightActions.className = "history-item-actions";
+
+          const shaBtn = document.createElement("button");
+          shaBtn.type = "button";
+          shaBtn.className = "history-sha-btn";
+          shaBtn.title = `Atvērt šo receptes versiju (v${versionNum} · ${shortSha})`;
+          shaBtn.textContent = `Atvērt ${shortSha}`;
+          shaBtn.addEventListener("click", () => {
+            switchToVersion(entry, versionNum, isLatest, { scrollToTop: true });
+          });
+
+          const diffLink = document.createElement("a");
+          diffLink.className = "history-diff-link";
+          diffLink.href = commitUrl;
+          diffLink.target = "_blank";
+          diffLink.rel = "noopener noreferrer";
+          diffLink.title = "Skatīt koda izmaiņas (diff) GitHub";
+          diffLink.textContent = "Diff ↗";
+
+          rightActions.appendChild(shaBtn);
+          rightActions.appendChild(diffLink);
 
           headerRow.appendChild(leftMeta);
-          headerRow.appendChild(shaLink);
+          headerRow.appendChild(rightActions);
 
           const msgEl = document.createElement("div");
           msgEl.className = "history-message";
@@ -720,8 +1076,32 @@
           historyList.appendChild(li);
         });
 
+        updateActiveVersionHighlight();
         historyStatus.hidden = true;
         historyList.hidden = false;
+
+        // Check if URL requests a specific historical version (?versija=<sha>),
+        // otherwise ensure the newest commit (commits[0]) is loaded so browser/CDN cache never shows stale recipe text
+        const params = new URLSearchParams(window.location.search);
+        const requestedVer = (params.get("versija") || "").trim().toLowerCase();
+        if (requestedVer) {
+          const matchIdx = commits.findIndex((c) =>
+            (c.sha || "").toLowerCase().startsWith(requestedVer)
+          );
+          if (matchIdx >= 0) {
+            switchToVersion(
+              commits[matchIdx],
+              total - matchIdx,
+              matchIdx === 0,
+              { scrollToTop: false }
+            );
+            historyDetails.open = true;
+            return;
+          }
+        }
+
+        // Always ensure newest version from commits[0] is synced onto the page by default
+        switchToVersion(commits[0], total, true, { scrollToTop: false });
       }
 
       async function loadCommitHistory() {
@@ -730,7 +1110,6 @@
           return;
         }
 
-        // Check sessionStorage cache first
         try {
           const cachedRaw = sessionStorage.getItem(cacheKey);
           if (cachedRaw) {
@@ -741,7 +1120,7 @@
             }
           }
         } catch (_e) {
-          // Ignore sessionStorage errors in private browsing
+          // Ignore sessionStorage errors
         }
 
         const apiUrl = `https://api.github.com/repos/${repo}/commits?path=${encodeURIComponent(
