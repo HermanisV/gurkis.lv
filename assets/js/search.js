@@ -66,10 +66,15 @@
       });
 
       if (countLabel) {
+        const isSingular = visibleCount % 10 === 1 && visibleCount % 100 !== 11;
         if (activeCategory === "all" && terms.length === 0) {
-          countLabel.textContent = `Rāda visas ${visibleCount} receptes`;
+          countLabel.textContent = isSingular
+            ? `Rāda ${visibleCount} recepti`
+            : `Rāda visas ${visibleCount} receptes`;
         } else {
-          countLabel.textContent = `Atrastas ${visibleCount} receptes`;
+          countLabel.textContent = isSingular
+            ? `Atrasta ${visibleCount} recepte`
+            : `Atrastas ${visibleCount} receptes`;
         }
       }
 
