@@ -48,7 +48,10 @@
     function applyFilters() {
       const query = normalizeText(searchInput.value.trim());
       const terms = query.split(/\s+/).filter(Boolean);
-      clearBtn.hidden = terms.length === 0;
+      if (clearBtn) {
+        clearBtn.hidden = terms.length === 0;
+        clearBtn.style.display = terms.length === 0 ? "none" : "";
+      }
 
       let visibleCount = 0;
 
@@ -62,6 +65,7 @@
 
         const isVisible = matchesCategory && matchesQuery;
         item.element.hidden = !isVisible;
+        item.element.style.display = isVisible ? "" : "none";
         if (isVisible) visibleCount++;
       });
 
@@ -80,10 +84,13 @@
 
       if (emptyState) {
         emptyState.hidden = visibleCount > 0;
+        emptyState.style.display = visibleCount > 0 ? "none" : "";
       }
     }
 
     searchInput.addEventListener("input", applyFilters);
+    searchInput.addEventListener("keyup", applyFilters);
+    searchInput.addEventListener("search", applyFilters);
 
     if (clearBtn) {
       clearBtn.addEventListener("click", () => {
@@ -131,6 +138,9 @@
       if (matchingPill) {
         matchingPill.click();
       }
+    } else {
+      // Ensure initial state is synced (e.g. if Firefox restores search input text on reload)
+      applyFilters();
     }
   }
 
