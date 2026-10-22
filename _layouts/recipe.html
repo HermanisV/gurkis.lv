@@ -238,6 +238,16 @@ layout: default
   </section>
   {% endif %}
 
+  <div id="recipe-version-banner" class="version-banner" hidden>
+    <div class="version-banner-text">
+      <span aria-hidden="true">🕒</span>
+      <span id="recipe-version-banner-label">Tu skaties vēsturisku receptes versiju.</span>
+    </div>
+    <button type="button" id="recipe-version-restore-btn" class="btn-outline-sm">
+      Atgriezties uz jaunāko versiju
+    </button>
+  </div>
+
   <div class="recipe-grid">
     <aside class="recipe-ingredients-panel">
       <div class="panel-header">
@@ -251,22 +261,24 @@ layout: default
       </div>
       <p class="panel-hint">Uzklikšķini uz sastāvdaļas, lai atzīmētu kā sagatavotu.</p>
 
-      {% for group in page.ingredients %}
-        <div class="ingredient-group">
-          {% if group.group and group.group != "" %}
-            <h3 class="ingredient-group-title">{{ group.group }}</h3>
-          {% endif %}
-          <ul class="ingredient-list">
-            {% for ing in group.items %}
-              <li class="ingredient-row" tabindex="0"{% if ing.calc_key %} data-calc-row="{{ ing.calc_key }}"{% endif %}>
-                <span class="ingredient-check" aria-hidden="true"></span>
-                <span class="ingredient-amount" data-base-amount="{{ ing.amount | escape }}"{% if ing.calc_key %} data-calc-amount="{{ ing.calc_key }}"{% endif %}>{{ ing.amount }}</span>
-                <span class="ingredient-name"{% if ing.calc_key %} data-calc-name="{{ ing.calc_key }}"{% endif %}>{{ ing.item }}</span>
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      {% endfor %}
+      <div id="recipe-ingredients-groups">
+        {% for group in page.ingredients %}
+          <div class="ingredient-group">
+            {% if group.group and group.group != "" %}
+              <h3 class="ingredient-group-title">{{ group.group }}</h3>
+            {% endif %}
+            <ul class="ingredient-list">
+              {% for ing in group.items %}
+                <li class="ingredient-row" tabindex="0"{% if ing.calc_key %} data-calc-row="{{ ing.calc_key }}"{% endif %}>
+                  <span class="ingredient-check" aria-hidden="true"></span>
+                  <span class="ingredient-amount" data-base-amount="{{ ing.amount | escape }}"{% if ing.calc_key %} data-calc-amount="{{ ing.calc_key }}"{% endif %}>{{ ing.amount }}</span>
+                  <span class="ingredient-name"{% if ing.calc_key %} data-calc-name="{{ ing.calc_key }}"{% endif %}>{{ ing.item }}</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
     </aside>
 
     <section class="recipe-instructions-panel">
