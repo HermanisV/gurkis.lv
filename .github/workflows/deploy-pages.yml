@@ -22,6 +22,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Enforce branch naming (feat/ or fix/ only)
+        if: github.event_name == 'pull_request'
+        shell: pwsh
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if ($env:HEAD_REF -notmatch '^(feat|fix)/[a-z0-9-]+$') {
+            Write-Error "Invalid branch name '$env:HEAD_REF'. Only 'feat/<slug>' and 'fix/<slug>' branches are allowed."
+            exit 1
+          }
+          Write-Host "[OK] Valid branch name: $env:HEAD_REF"
+
       - name: Checkout repository
         uses: actions/checkout@v4
 

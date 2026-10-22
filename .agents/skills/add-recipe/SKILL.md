@@ -89,14 +89,14 @@ Follow this step-by-step procedure whenever the user provides a recipe (via chat
    powershell -ExecutionPolicy Bypass -File .agents/skills/add-recipe/scripts/validate-recipes.ps1
    ```
 2. Fix any reported warnings or errors (missing frontmatter fields, forbidden imperial units, or invalid filenames) before committing.
-3. **Never commit or push directly to `main`**:
-   - Ensure changes are on a dedicated branch named `recipe/<slug>` (branched from latest `origin/main`).
+3. **Never commit or push directly to `main` (only `feat/` and `fix/` branches are allowed)**:
+   - Ensure changes are on a dedicated branch named `feat/<slug>` (for new recipes) or `fix/<slug>` (for recipe fixes), branched from latest `origin/main`.
    - Stage, commit, and push the branch to `origin`:
      ```powershell
-     git checkout -b recipe/<slug>
+     git checkout -b feat/<slug>
      git add _recipes/<slug>.md
      git commit -m "Add <recipe title> recipe"
-     git push -u origin recipe/<slug>
+     git push -u origin feat/<slug>
      ```
-   - Report the branch name (`recipe/<slug>`) and PR link (`https://github.com/HermanisV/gurkis.lv/pull/new/recipe/<slug>`) to the user for review and merge.
+   - Report the branch name (`feat/<slug>`) and PR link (`https://github.com/HermanisV/gurkis.lv/pull/new/feat/<slug>`) to the user for review and merge.
 
