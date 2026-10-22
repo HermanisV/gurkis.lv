@@ -4,6 +4,7 @@ title: "Krēmīgs sēņu, brokoļu un rīsu sacepums"
 description: "Sātīgs un krēmīgs cepeškrāsns sacepums vienā traukā ar šampinjoniem, brokoļiem, turku zirņiem un zeltainu Panko garoziņu."
 categories:
   - Pamatēdieni
+  - Sacepums
 tags:
   - rīsi
   - sēnes
