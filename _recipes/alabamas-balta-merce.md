@@ -15,13 +15,13 @@ cook_time: 0
 servings: 6
 source_url: "https://heygrillhey.com/alabama-white-sauce/"
 source_name: "Hey Grill Hey"
-date: 2026-10-21
+date: 2026-10-22
 ingredients:
-  - group: "Mērcei (ap 340 g)"
+  - group: "Mērcei (ap 320 g)"
     items:
       - amount: "230 g"
         item: "majonēze"
-      - amount: "60 ml"
+      - amount: "40 ml"
         item: "ābolu etiķis"
       - amount: "25 g (2 ēk)"
         item: "brūnais cukurs"
@@ -37,12 +37,13 @@ ingredients:
         item: "maltie melnie pipari"
 ---
 
-1. Vidēja izmēra bļodā liek **230 g** majonēzes, pielej **60 ml** ābolu etiķa un **5 ml (1 tk)** svaigi spiestas citrona sulas, kā arī pievieno **25 g (2 ēk)** brūnā cukura, **15 g (1 ēk)** pikanto sinepju, **5 g (1 tk)** mārrutku, **3 g (0.5 tk)** sāls un **1.5 g (0.5 tk)** malto melno piparu.
+1. Vidēja izmēra bļodā liek **230 g** majonēzes, pielej **40 ml** ābolu etiķa un **5 ml (1 tk)** svaigi spiestas citrona sulas, kā arī pievieno **25 g (2 ēk)** brūnā cukura, **15 g (1 ēk)** pikanto sinepju, **5 g (1 tk)** mārrutku, **3 g (0.5 tk)** sāls un **1.5 g (0.5 tk)** malto melno piparu.
 2. Ar putojamo slotiņu enerģiski sakuļ visas sastāvdaļas, līdz mērce ir pilnīgi viendabīga, gluda un cukurs ir izšķīdis.
 3. Pārliek mērci slēgtā traukā vai burciņā un liek ledusskapī ievilkties vismaz **15–30 minūtes** pirms pasniegšanas, lai etiķa, mārrutku un garšvielu garšas pilnībā savienotos.
 
 ## Padomi
 
+- **Konsistence:** **40 ml** ābolu etiķa nodrošina biezāku un krēmīgāku mērces konsistenci, kas labāk turas pie gaļas (ja vēlies šķidrāku mērci pārlietošanai, etiķa daudzumu var palielināt līdz **60 ml**).
 - **Pielietojums:** Pārlej vai apzied ar šo mērci tikko no grila vai kūpinātavas noņemtu karstu vistu, izmanto kā mērcīti grilētai gaļai vai kā bāzi kāpostu salātiem (*coleslaw*).
 - **Uzglabāšana:** Slēgtā traukā ledusskapī mērce saglabājas svaiga līdz **2 nedēļām** (pirms lietošanas samaisi).
 
