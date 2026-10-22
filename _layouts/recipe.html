@@ -277,5 +277,77 @@ layout: default
       </div>
     </section>
   </div>
+
+  <div class="recipe-extras">
+    <details class="recipe-history-panel" id="recipe-history-details"
+             data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+             data-branch="{{ site.github_branch | default: 'main' }}"
+             data-recipe-path="{{ page.path }}">
+      <summary class="history-summary">
+        <div class="history-summary-title">
+          <span class="history-icon" aria-hidden="true">🕒</span>
+          <span>Versiju vēsture</span>
+          <span class="badge badge-tag" id="recipe-version-badge" hidden></span>
+        </div>
+        <span class="history-toggle-hint">Rādīt izmaiņas ▾</span>
+      </summary>
+
+      <div class="history-body">
+        <div class="history-actions">
+          <span class="panel-hint">Automātiska šīs receptes izmaiņu vēsture no GitHub repozitorija.</span>
+          <a href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/commits/{{ site.github_branch | default: 'main' }}/{{ page.path }}"
+             target="_blank" rel="noopener noreferrer" class="history-github-link">
+            Skatīt pilnu vēsturi GitHub ↗
+          </a>
+        </div>
+        <div id="recipe-history-status" class="history-status">Ielādē versiju vēsturi…</div>
+        <ol id="recipe-history-list" class="history-timeline" hidden></ol>
+      </div>
+    </details>
+
+    {% if site.comments.enabled %}
+    <section class="recipe-comments-panel" aria-labelledby="comments-heading">
+      <div class="comments-header">
+        <div>
+          <h2 id="comments-heading">Piezīmes un uzlabojumi nākamajai reizei</h2>
+          <p class="panel-hint">Pieraksti novērojumus par cepšanas laiku, garšvielu proporcijām vai idejas nākamajai gatavošanas reizei.</p>
+        </div>
+        <a href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues/new?title={{ page.title | prepend: 'Uzlabojums: ' | uri_escape }}&labels={{ site.comments.label | default: 'receptes-piezimes' | uri_escape }}&body={{ page.url | relative_url | prepend: 'Recepte: ' | append: '%0A%0AKo uzlabot nākamreiz:%0A- ' }}"
+           target="_blank" rel="noopener noreferrer" class="btn-outline-sm">
+          + Jauns uzlabojums (GitHub Issue) ↗
+        </a>
+      </div>
+
+      <div class="comments-widget-container">
+        {% if site.comments.provider == "giscus" and site.comments.giscus_repo_id != "" %}
+          <script src="https://giscus.app/client.js"
+                  data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+                  data-repo-id="{{ site.comments.giscus_repo_id }}"
+                  data-category="{{ site.comments.giscus_category | default: 'Receptes' }}"
+                  data-category-id="{{ site.comments.giscus_category_id }}"
+                  data-mapping="{{ site.comments.issue_term | default: 'pathname' }}"
+                  data-strict="0"
+                  data-reactions-enabled="1"
+                  data-emit-metadata="0"
+                  data-input-position="top"
+                  data-theme="{{ site.comments.theme | default: 'light' }}"
+                  data-lang="lv"
+                  crossorigin="anonymous"
+                  async>
+          </script>
+        {% else %}
+          <script src="https://utteranc.es/client.js"
+                  repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+                  issue-term="{{ site.comments.issue_term | default: 'pathname' }}"
+                  label="{{ site.comments.label | default: 'receptes-piezimes' }}"
+                  theme="{{ site.comments.theme | default: 'github-light' }}"
+                  crossorigin="anonymous"
+                  async>
+          </script>
+        {% endif %}
+      </div>
+    </section>
+    {% endif %}
+  </div>
 </article>
 
