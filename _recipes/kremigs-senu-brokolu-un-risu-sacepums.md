@@ -44,7 +44,7 @@ ingredients:
         item: "sīpolu pulveris"
       - amount: "1 g (0.5 tk)"
         item: "kaltēts timiāns"
-      - amount: "9 g (1.5 tk)"
+      - amount: "12 g (2 tk)"
         item: "sāls"
       - amount: "1.5 g (0.5 tk)"
         item: "malti melnie pipari"
