@@ -632,7 +632,6 @@
     const versionRestoreBtn = document.getElementById("recipe-version-restore-btn");
     const versionedCommentsSection = document.getElementById("recipe-versioned-comments");
     const versionedCommentsList = document.getElementById("recipe-versioned-comments-list");
-    const newIssueBtn = document.getElementById("new-improvement-issue-btn");
 
     if (historyDetails && historyList && historyStatus) {
       const repo = historyDetails.dataset.repo || "HermanisV/gurkis.lv";
@@ -925,22 +924,6 @@
 
           activeCommitSha = sha;
           updateActiveVersionHighlight();
-
-          // Update "+ Jauns uzlabojums" issue link to include currently viewed version
-          if (newIssueBtn) {
-            try {
-              const issueUrl = new URL(newIssueBtn.href);
-              const pageTitle = (titleEl && titleEl.textContent) || recipeSlug;
-              issueUrl.searchParams.set("title", `Uzlabojums: ${pageTitle} (v${versionNum})`);
-              issueUrl.searchParams.set(
-                "body",
-                `Recepte: ${window.location.origin}${window.location.pathname}\nVersija: v${versionNum} (${shortSha})\n\nKo uzlabot nākamreiz:\n- `
-              );
-              newIssueBtn.href = issueUrl.toString();
-            } catch (_e) {
-              // Ignore URL parse error
-            }
-          }
 
           // Update banner & URL parameter
           const url = new URL(window.location.href);

@@ -324,15 +324,6 @@ layout: default
           <h2 id="comments-heading">Piezīmes un uzlabojumi nākamajai reizei</h2>
           <p class="panel-hint">Pieraksti novērojumus par cepšanas laiku, garšvielu proporcijām vai idejas nākamajai gatavošanas reizei.</p>
         </div>
-        <a href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues/new?title={{ page.title | prepend: 'Uzlabojums: ' | uri_escape }}&labels={{ site.comments.label | default: 'receptes-piezimes' | uri_escape }}&body={{ page.url | relative_url | prepend: 'Recepte: ' | append: '%0A%0AKo uzlabot nākamreiz:%0A- ' }}"
-           target="_blank" rel="noopener noreferrer" class="btn-outline-sm" id="new-improvement-issue-btn">
-          + Jauns uzlabojums (GitHub Issue) ↗
-        </a>
-      </div>
-
-      <div id="recipe-versioned-comments" class="versioned-comments-section" hidden>
-        <div class="versioned-comments-title">Pievienotās piezīmes (ar versijas atzīmi)</div>
-        <div id="recipe-versioned-comments-list" class="versioned-comments-list"></div>
       </div>
 
       <div class="comments-widget-container">
@@ -362,6 +353,11 @@ layout: default
                   async>
           </script>
         {% endif %}
+      </div>
+
+      <div id="recipe-versioned-comments" class="versioned-comments-section" hidden>
+        <div class="versioned-comments-title">Pievienotās piezīmes (ar versijas atzīmi)</div>
+        <div id="recipe-versioned-comments-list" class="versioned-comments-list"></div>
       </div>
     </section>
     {% endif %}
