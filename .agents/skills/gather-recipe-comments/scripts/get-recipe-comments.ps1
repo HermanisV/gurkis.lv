@@ -94,6 +94,39 @@ function Get-CommentVersionLabel {
     return "v1 ($oldestSha)"
 }
 
+function Get-CommentStatus {
+    param([object]$IssueObj, [string]$BodyText)
+    $text = [string]$BodyText.Trim().ToLower()
+    if ($text.StartsWith("[ieviests]") -or $text.StartsWith("[atrisināts]") -or $text.StartsWith("[atrisinats]") -or $text.StartsWith("[resolved]")) {
+        return "RESOLVED"
+    }
+    if ($text.StartsWith("[noraidīts]") -or $text.StartsWith("[noraidits]") -or $text.StartsWith("[rejected]") -or $text.StartsWith("[wontfix]") -or $text.StartsWith("[won't fix]")) {
+        return "REJECTED"
+    }
+    if ($null -ne $IssueObj) {
+        $labels = @()
+        if ($null -ne $IssueObj.labels) {
+            foreach ($lbl in $IssueObj.labels) {
+                if ($lbl -is [string]) { $labels += $lbl.ToLower() }
+                elseif ($null -ne $lbl.name) { $labels += [string]$lbl.name.ToLower() }
+            }
+        }
+        if ($labels -contains "noraidīts" -or $labels -contains "noraidits" -or $labels -contains "rejected" -or $labels -contains "wontfix" -or $labels -contains "not-planned" -or $labels -contains "nav plānots" -or $labels -contains "nav planots") {
+            return "REJECTED"
+        }
+        if ($labels -contains "ieviests" -or $labels -contains "atrisināts" -or $labels -contains "atrisinats" -or $labels -contains "resolved" -or $labels -contains "completed") {
+            return "RESOLVED"
+        }
+        if ($IssueObj.state -eq "closed") {
+            if ($IssueObj.state_reason -eq "not_planned") {
+                return "REJECTED"
+            }
+            return "RESOLVED"
+        }
+    }
+    return "OPEN"
+}
+
 # 2. Fetch Issues matching this recipe slug (Utterances threads + manual Improvement Issues)
 $issuesUrl = "https://api.github.com/repos/$Repo/issues?state=all&per_page=100"
 $allIssues = Invoke-GitHubApiArray -Uri $issuesUrl -Headers $headers
@@ -123,10 +156,12 @@ foreach ($issue in $matchingIssues) {
         $writtenOnVer = Get-CommentVersionLabel -CommentDate $issueCreated -CommitsList $commits
 
         if (-not $OnlyNewestVersion -or $isNewest) {
+            $status = Get-CommentStatus -IssueObj $issue -BodyText $issue.body
             $collectedComments += [PSCustomObject]@{
                 SourceType         = "GitHub Issue #$($issue.number) Body ($($issue.title))"
                 IssueNumber        = $issue.number
                 IssueState         = $issue.state
+                Status             = $status
                 Author             = $issueAuthor
                 CreatedAt          = $issueCreated.ToString("yyyy-MM-dd HH:mm:ss zzz")
                 UpdatedAt          = $issueUpdated.ToString("yyyy-MM-dd HH:mm:ss zzz")
@@ -149,10 +184,12 @@ foreach ($issue in $matchingIssues) {
             $writtenOnVer = Get-CommentVersionLabel -CommentDate $cCreated -CommitsList $commits
 
             if (-not $OnlyNewestVersion -or $isNewest) {
+                $status = Get-CommentStatus -IssueObj $issue -BodyText $c.body
                 $collectedComments += [PSCustomObject]@{
                     SourceType         = "Page Comment (Issue #$($issue.number))"
                     IssueNumber        = $issue.number
                     IssueState         = $issue.state
+                    Status             = $status
                     Author             = [string]$c.user.login
                     CreatedAt          = $cCreated.ToString("yyyy-MM-dd HH:mm:ss zzz")
                     UpdatedAt          = $cUpdated.ToString("yyyy-MM-dd HH:mm:ss zzz")
@@ -187,8 +224,13 @@ if ($collectedComments.Count -eq 0) {
 
 $idx = 1
 foreach ($item in $collectedComments) {
-    $badge = if ($item.IsForNewestVersion) { "[NEWEST VERSION]" } else { "[OLDER VERSION]" }
-    Write-Host "[$idx] $badge [Pie versijas $($item.WrittenOnVersion)] $($item.SourceType) by @$($item.Author) on $($item.UpdatedAt)"
+    $verBadge = if ($item.IsForNewestVersion) { "[NEWEST VERSION]" } else { "[OLDER VERSION]" }
+    $statusBadge = switch ($item.Status) {
+        "RESOLVED" { "[IEVIESTS]" }
+        "REJECTED" { "[NORAIDITS]" }
+        Default    { "[AKTIVS]" }
+    }
+    Write-Host "[$idx] $verBadge $statusBadge [Pie versijas $($item.WrittenOnVersion)] $($item.SourceType) by @$($item.Author) on $($item.UpdatedAt)"
     Write-Host "    URL : $($item.Url)"
     Write-Host "    Text: $($item.Text)"
     Write-Host ""

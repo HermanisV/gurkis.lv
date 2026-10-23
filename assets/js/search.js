@@ -1232,7 +1232,7 @@
         .replace(/^_recipes[/\\]/, "")
         .replace(/\.md$/, "");
       const cacheKey = `gurkis_commits_v2_${repo}_${branch}_${recipePath}`;
-      const commentsCacheKey = `gurkis_comments_v1_${repo}_${recipeSlug}`;
+      const commentsCacheKey = `gurkis_comments_v2_${repo}_${recipeSlug}`;
       const CACHE_TTL_MS = 60 * 1000; // 1 minute cache to stay fresh after merges
 
       let loadedCommits = [];
@@ -1851,7 +1851,8 @@
           const dateFormatted = formatLatvianDate(item.created_at);
 
           const card = document.createElement("div");
-          card.className = "versioned-comment-card";
+          const commentStatus = item.status || "open";
+          card.className = `versioned-comment-card comment-is-${commentStatus}`;
 
           const metaRow = document.createElement("div");
           metaRow.className = "versioned-comment-meta";
@@ -1869,6 +1870,21 @@
             });
           }
 
+          const statusBadge = document.createElement("span");
+          if (commentStatus === "resolved") {
+            statusBadge.className = "badge badge-status badge-status-resolved";
+            statusBadge.innerHTML = `<span aria-hidden="true">✓</span> Ieviests`;
+            statusBadge.title = "Šī piezīme vai ierosinājums ir ieviests jaunākā receptes versijā";
+          } else if (commentStatus === "rejected") {
+            statusBadge.className = "badge badge-status badge-status-rejected";
+            statusBadge.innerHTML = `<span aria-hidden="true">✕</span> Noraidīts`;
+            statusBadge.title = "Šis ierosinājums tika izskatīts, bet netika ieviests";
+          } else {
+            statusBadge.className = "badge badge-status badge-status-open";
+            statusBadge.innerHTML = `<span aria-hidden="true">⏳</span> Aktīvs`;
+            statusBadge.title = "Aktīva piezīme nākamajai gatavošanas reizei";
+          }
+
           const authorSpan = document.createElement("span");
           authorSpan.className = "versioned-comment-author";
           authorSpan.textContent = `· @${item.author}`;
@@ -1879,6 +1895,7 @@
           dateSpan.textContent = `· ${dateFormatted}`;
 
           metaRow.appendChild(verBtn);
+          metaRow.appendChild(statusBadge);
           metaRow.appendChild(authorSpan);
           metaRow.appendChild(dateSpan);
 
@@ -1988,11 +2005,22 @@
             `.history-item-comments[data-version-sha="${sha}"]`
           );
           if (historyCommentsBox) {
+            const commentStatus = item.status || "open";
             const noteRow = document.createElement("div");
-            noteRow.className = "history-attached-comment";
+            noteRow.className = `history-attached-comment is-${commentStatus}`;
+
+            let statusBadgeHtml = "";
+            if (commentStatus === "resolved") {
+              statusBadgeHtml = `<span class="badge badge-status-sm badge-status-resolved" title="Ierosinājums ieviests jaunākā versijā">✓ Ieviests</span> `;
+            } else if (commentStatus === "rejected") {
+              statusBadgeHtml = `<span class="badge badge-status-sm badge-status-rejected" title="Ierosinājums netika ieviests">✕ Noraidīts</span> `;
+            } else {
+              statusBadgeHtml = `<span class="badge badge-status-sm badge-status-open" title="Aktīva piezīme">⏳ Aktīvs</span> `;
+            }
+
             noteRow.innerHTML = `<span class="history-comment-tag">💬 Piezīme pie v${vNum} (${escapeHtml(
               shortSha
-            )})</span> <span class="history-comment-meta">· @${escapeHtml(
+            )})</span> ${statusBadgeHtml}<span class="history-comment-meta">· @${escapeHtml(
               item.author
             )} · ${escapeHtml(
               dateFormatted
@@ -2008,6 +2036,76 @@
         renderNextCommentsPage(commits);
       }
 
+      function determineCommentStatus(issue, commentBody) {
+        const bodyText = String(commentBody || "").trim().toLowerCase();
+
+        // 1. Explicit in-text tag in comment or issue body takes immediate precedence
+        if (
+          bodyText.startsWith("[ieviests]") ||
+          bodyText.startsWith("[atrisināts]") ||
+          bodyText.startsWith("[atrisinats]") ||
+          bodyText.startsWith("[resolved]")
+        ) {
+          return "resolved";
+        }
+        if (
+          bodyText.startsWith("[noraidīts]") ||
+          bodyText.startsWith("[noraidits]") ||
+          bodyText.startsWith("[rejected]") ||
+          bodyText.startsWith("[wontfix]") ||
+          bodyText.startsWith("[won't fix]")
+        ) {
+          return "rejected";
+        }
+
+        if (!issue) return "open";
+
+        // 2. Check issue labels
+        const labelNames = Array.isArray(issue.labels)
+          ? issue.labels.map((l) => (typeof l === "string" ? l : (l && l.name) || "").toLowerCase())
+          : [];
+
+        const hasRejectedLabel = labelNames.some((l) =>
+          [
+            "noraidīts",
+            "noraidits",
+            "rejected",
+            "wontfix",
+            "won't fix",
+            "not-planned",
+            "nav plānots",
+            "nav planots"
+          ].includes(l)
+        );
+        if (hasRejectedLabel) return "rejected";
+
+        const hasResolvedLabel = labelNames.some((l) =>
+          [
+            "ieviests",
+            "atrisināts",
+            "atrisinats",
+            "resolved",
+            "done",
+            "completed"
+          ].includes(l)
+        );
+        if (hasResolvedLabel) return "resolved";
+
+        // 3. Check GitHub issue state and state_reason
+        const state = String(issue.state || "").toLowerCase();
+        const stateReason = String(issue.state_reason || "").toLowerCase();
+
+        if (state === "closed") {
+          if (stateReason === "not_planned") {
+            return "rejected";
+          }
+          // Default close or "completed" -> resolved / implemented in version history
+          return "resolved";
+        }
+
+        return "open";
+      }
+
       async function loadRecipeComments(commits) {
         if (!recipeSlug) return;
 
@@ -2018,8 +2116,9 @@
             if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
               recipeMatchedIssue = cached.matchedIssue || null;
               if (recipeViewIssueLink) {
-                if (recipeMatchedIssue && recipeMatchedIssue.html_url) {
-                  recipeViewIssueLink.href = recipeMatchedIssue.html_url;
+                const targetViewUrl = cached.viewIssueUrl || (recipeMatchedIssue && recipeMatchedIssue.html_url);
+                if (targetViewUrl) {
+                  recipeViewIssueLink.href = targetViewUrl;
                   recipeViewIssueLink.hidden = false;
                 } else {
                   recipeViewIssueLink.hidden = true;
@@ -2054,13 +2153,28 @@
             );
           });
 
+          let viewIssueUrl = null;
           if (matchingIssues.length > 0) {
-            recipeMatchedIssue = {
-              number: matchingIssues[0].number,
-              html_url: matchingIssues[0].html_url
-            };
-            if (recipeViewIssueLink) {
-              recipeViewIssueLink.href = recipeMatchedIssue.html_url;
+            // Prioritize an open issue as target for new comment additions
+            const openIssue = matchingIssues.find(
+              (iss) => String(iss.state || "").toLowerCase() === "open"
+            );
+
+            if (openIssue) {
+              recipeMatchedIssue = {
+                number: openIssue.number,
+                html_url: openIssue.html_url
+              };
+              viewIssueUrl = openIssue.html_url;
+            } else {
+              // All matching issues are closed (e.g. earlier feedback was resolved/rejected)
+              // Setting recipeMatchedIssue to null ensures "Pievienot piezīmi" opens a fresh issue for future notes
+              recipeMatchedIssue = null;
+              viewIssueUrl = matchingIssues[0].html_url;
+            }
+
+            if (recipeViewIssueLink && viewIssueUrl) {
+              recipeViewIssueLink.href = viewIssueUrl;
               recipeViewIssueLink.hidden = false;
             }
           } else {
@@ -2079,11 +2193,15 @@
               String(issue.title || "").includes(`receptes/${recipeSlug}`);
 
             if (!isUtterancesThread && issue.body) {
+              const status = determineCommentStatus(issue, issue.body);
               collected.push({
                 author: issueAuthor,
                 created_at: issue.created_at,
                 body: String(issue.body).trim(),
-                url: issue.html_url
+                url: issue.html_url,
+                status: status,
+                issueState: issue.state,
+                issueNumber: issue.number
               });
             }
 
@@ -2096,11 +2214,15 @@
                 if (Array.isArray(cList)) {
                   cList.forEach((c) => {
                     if (c && c.body) {
+                      const status = determineCommentStatus(issue, c.body);
                       collected.push({
                         author: (c.user && c.user.login) || "Autors",
                         created_at: c.created_at,
                         body: String(c.body).trim(),
-                        url: c.html_url
+                        url: c.html_url,
+                        status: status,
+                        issueState: issue.state,
+                        issueNumber: issue.number
                       });
                     }
                   });
@@ -2115,7 +2237,8 @@
               JSON.stringify({
                 timestamp: Date.now(),
                 data: collected,
-                matchedIssue: recipeMatchedIssue
+                matchedIssue: recipeMatchedIssue,
+                viewIssueUrl: viewIssueUrl
               })
             );
           } catch (_e) {
