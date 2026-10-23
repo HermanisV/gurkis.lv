@@ -153,6 +153,8 @@
     const ingredientsGroupsEl = document.getElementById("recipe-ingredients-groups");
     const instructionEl = document.getElementById("recipe-instructions");
     const pizzaCalcEl = document.getElementById("pizza-calculator");
+    const breadCalcEl = document.getElementById("bread-calculator");
+    const hasCalculator = Boolean(pizzaCalcEl || breadCalcEl);
     const titleEl = recipePage.querySelector(".recipe-title");
     const leadEl = recipePage.querySelector(".recipe-lead");
 
@@ -701,6 +703,495 @@
 
       // Initial calculation on page load
       recalculatePizzaDough();
+    } else if (breadCalcEl) {
+      // Sourdough Bread Calculator Mode (Baker's % relative to bowl flour)
+      const BREAD_PRESETS = {
+        alexandra: {
+          num_loaves: 1,
+          flour_per_loaf: 500,
+          temp_c: 21,
+          hydration_pct: 75,
+          starter_pct: 20,
+          salt_pct: 2.4,
+          starter_hyd_pct: 100,
+          wholewheat_pct: 0,
+          rye_pct: 0,
+          spelt_pct: 0,
+          auto_hydration: true
+        },
+        warm_kitchen: {
+          num_loaves: 1,
+          flour_per_loaf: 500,
+          temp_c: 25,
+          hydration_pct: 75,
+          starter_pct: 10,
+          salt_pct: 2.4,
+          starter_hyd_pct: 100,
+          wholewheat_pct: 0,
+          rye_pct: 0,
+          spelt_pct: 0,
+          auto_hydration: true
+        },
+        country_wholewheat: {
+          num_loaves: 1,
+          flour_per_loaf: 500,
+          temp_c: 21,
+          hydration_pct: 75,
+          starter_pct: 20,
+          salt_pct: 2.4,
+          starter_hyd_pct: 100,
+          wholewheat_pct: 20,
+          rye_pct: 0,
+          spelt_pct: 0,
+          auto_hydration: true
+        },
+        rye_blend: {
+          num_loaves: 1,
+          flour_per_loaf: 500,
+          temp_c: 21,
+          hydration_pct: 75,
+          starter_pct: 20,
+          salt_pct: 2.4,
+          starter_hyd_pct: 100,
+          wholewheat_pct: 0,
+          rye_pct: 30,
+          spelt_pct: 0,
+          auto_hydration: true
+        },
+        spelt_loaf: {
+          num_loaves: 1,
+          flour_per_loaf: 500,
+          temp_c: 21,
+          hydration_pct: 75,
+          starter_pct: 20,
+          salt_pct: 2.4,
+          starter_hyd_pct: 100,
+          wholewheat_pct: 0,
+          rye_pct: 0,
+          spelt_pct: 50,
+          auto_hydration: true
+        }
+      };
+
+      let presetBaseLoaves = 1;
+
+      const elNumLoaves = document.getElementById("bread-num-loaves");
+      const elFlourPerLoaf = document.getElementById("bread-flour-per-loaf");
+      const elFlourPerLoafRange = document.getElementById("bread-flour-per-loaf-range");
+      const elTemp = document.getElementById("bread-temp");
+      const elTempRange = document.getElementById("bread-temp-range");
+      const elTempBadge = document.getElementById("bread-temp-badge");
+      const elHydration = document.getElementById("bread-hydration");
+      const elHydrationRange = document.getElementById("bread-hydration-range");
+      const elEffHydrationBadge = document.getElementById("bread-eff-hydration-badge");
+      const elStarterPct = document.getElementById("bread-starter-pct");
+      const elStarterPctRange = document.getElementById("bread-starter-pct-range");
+      const elSaltPct = document.getElementById("bread-salt-pct");
+      const elSaltPctRange = document.getElementById("bread-salt-pct-range");
+      const elStarterHyd = document.getElementById("bread-starter-hyd");
+
+      const elWholewheatPct = document.getElementById("bread-wholewheat-pct");
+      const elWholewheatPctRange = document.getElementById("bread-wholewheat-pct-range");
+      const elRyePct = document.getElementById("bread-rye-pct");
+      const elRyePctRange = document.getElementById("bread-rye-pct-range");
+      const elSpeltPct = document.getElementById("bread-spelt-pct");
+      const elSpeltPctRange = document.getElementById("bread-spelt-pct-range");
+      const elAutoHydration = document.getElementById("bread-auto-hydration");
+      const elHydCorrNote = document.getElementById("bread-hyd-corr-note");
+      const elFlourWarning = document.getElementById("bread-flour-warning");
+
+      const sizeChips = breadCalcEl.querySelectorAll(".bread-size-chip");
+      const presetBtns = breadCalcEl.querySelectorAll(".calc-preset-btn");
+
+      function clampBreadNum(val, min, max, fallback) {
+        const n = parseFloat(val);
+        if (isNaN(n)) return fallback;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function setBreadText(id, text) {
+        const node = document.getElementById(id);
+        if (node) node.textContent = text;
+      }
+
+      function formatGramDisplay(val, stepHalf) {
+        if (stepHalf) {
+          const r = Math.round(val * 2) / 2;
+          return r % 1 === 0 ? `${r.toFixed(0)} g` : `${r.toFixed(1)} g`;
+        }
+        return `${Math.round(val)} g`;
+      }
+
+      // Estimate bulk fermentation range (hours) based on kitchen temp (C) & starter % of bowl flour
+      // Calibrated to Alexandra's benchmarks:
+      // - 21 °C @ 20% starter -> 8–10 h
+      // - 25 °C @ 20% starter -> 4–6 h
+      // - 10% starter (50 g) increases time by ~30%
+      function estimateBulkFermentation(tempC, starterPct) {
+        const tempFactor = Math.pow(2, (21 - tempC) / 4.5);
+        const starterFactor = Math.pow(20 / Math.max(2, starterPct), 0.38);
+        const midHours = 9.0 * tempFactor * starterFactor;
+        const low = Math.max(2, Math.round(midHours * 0.88 * 2) / 2);
+        const high = Math.max(low + 1, Math.round(midHours * 1.12 * 2) / 2);
+        const fmt = (n) => (n % 1 === 0 ? n.toFixed(0) : n.toFixed(1));
+        return {
+          shortLabel: `${fmt(low)}–${fmt(high)} h`,
+          longLabel: `${fmt(low)}–${fmt(high)} stundas`
+        };
+      }
+
+      function rebalanceSpecialtyFlours(changedInput) {
+        let ww = clampBreadNum(elWholewheatPct.value, 0, 100, 0);
+        let rye = clampBreadNum(elRyePct.value, 0, 100, 0);
+        let spelt = clampBreadNum(elSpeltPct.value, 0, 100, 0);
+        const sum = ww + rye + spelt;
+        if (sum > 100) {
+          const excess = sum - 100;
+          if (changedInput === "ww") {
+            const others = rye + spelt;
+            if (others > 0) {
+              rye = Math.max(0, Math.round(rye - (excess * rye) / others));
+              spelt = Math.max(0, 100 - ww - rye);
+            } else {
+              ww = 100;
+            }
+          } else if (changedInput === "rye") {
+            const others = ww + spelt;
+            if (others > 0) {
+              ww = Math.max(0, Math.round(ww - (excess * ww) / others));
+              spelt = Math.max(0, 100 - rye - ww);
+            } else {
+              rye = 100;
+            }
+          } else if (changedInput === "spelt") {
+            const others = ww + rye;
+            if (others > 0) {
+              ww = Math.max(0, Math.round(ww - (excess * ww) / others));
+              rye = Math.max(0, 100 - spelt - ww);
+            } else {
+              spelt = 100;
+            }
+          }
+          elWholewheatPct.value = ww;
+          if (elWholewheatPctRange) elWholewheatPctRange.value = ww;
+          elRyePct.value = rye;
+          if (elRyePctRange) elRyePctRange.value = rye;
+          elSpeltPct.value = spelt;
+          if (elSpeltPctRange) elSpeltPctRange.value = spelt;
+        }
+      }
+
+      function recalculateBreadDough() {
+        const num_loaves = clampBreadNum(elNumLoaves.value, 1, 50, 1);
+        const flour_per_loaf = clampBreadNum(elFlourPerLoaf.value, 100, 3000, 500);
+        const temp_c = clampBreadNum(elTemp.value, 12, 38, 21);
+        const base_hyd_pct = clampBreadNum(elHydration.value, 45, 120, 75);
+        const starter_pct = clampBreadNum(elStarterPct.value, 1, 80, 20);
+        const salt_pct = clampBreadNum(elSaltPct.value, 0, 6, 2.4);
+        const starter_hyd_pct = clampBreadNum(elStarterHyd.value, 40, 250, 100);
+
+        let ww_pct = clampBreadNum(elWholewheatPct.value, 0, 100, 0);
+        let rye_pct = clampBreadNum(elRyePct.value, 0, 100, 0);
+        let spelt_pct = clampBreadNum(elSpeltPct.value, 0, 100, 0);
+        if (ww_pct + rye_pct + spelt_pct > 100) {
+          const scale = 100 / (ww_pct + rye_pct + spelt_pct);
+          ww_pct = Math.round(ww_pct * scale);
+          rye_pct = Math.round(rye_pct * scale);
+          spelt_pct = Math.max(0, 100 - ww_pct - rye_pct);
+        }
+        const wheat_pct = Math.max(0, 100 - ww_pct - rye_pct - spelt_pct);
+
+        // Highlight size chip
+        sizeChips.forEach((chip) => {
+          const chipVal = parseFloat(chip.dataset.flour);
+          chip.classList.toggle("active", Math.abs(chipVal - flour_per_loaf) < 1);
+        });
+
+        // Hydration auto-correction for flour blend (+10 pp whole wheat, +15 pp rye, -5 pp spelt)
+        const rawCorrPct = 0.10 * ww_pct + 0.15 * rye_pct - 0.05 * spelt_pct;
+        const autoHydOn = Boolean(elAutoHydration && elAutoHydration.checked);
+        const appliedCorrPct = autoHydOn ? rawCorrPct : 0;
+        const eff_hyd_pct = Math.max(45, base_hyd_pct + appliedCorrPct);
+
+        if (elHydCorrNote) {
+          const sign = rawCorrPct >= 0 ? "+" : "";
+          elHydCorrNote.textContent = `(${sign}${rawCorrPct.toFixed(1)}%)`;
+        }
+        if (elEffHydrationBadge) {
+          elEffHydrationBadge.textContent = `${eff_hyd_pct.toFixed(1)}%`;
+        }
+        if (elTempBadge) {
+          const tempStr = temp_c % 1 === 0 ? temp_c.toFixed(0) : temp_c.toFixed(1);
+          elTempBadge.textContent = `${tempStr} °C`;
+        }
+
+        // Core Baker's Math (relative to bowl flour F)
+        const F_bowl = flour_per_loaf * num_loaves;
+        const W_wheat = (F_bowl * wheat_pct) / 100;
+        const W_ww = (F_bowl * ww_pct) / 100;
+        const W_rye = (F_bowl * rye_pct) / 100;
+        const W_spelt = (F_bowl * spelt_pct) / 100;
+
+        const W_water = (F_bowl * eff_hyd_pct) / 100;
+        const W_starter = (F_bowl * starter_pct) / 100;
+        const W_salt = (F_bowl * salt_pct) / 100;
+
+        const H_starter = starter_hyd_pct / 100;
+        const W_starter_flour = W_starter / (1 + H_starter);
+        const W_starter_water = W_starter - W_starter_flour;
+
+        const W_total_flour = F_bowl + W_starter_flour;
+        const W_total_water = W_water + W_starter_water;
+        const W_total_dough = F_bowl + W_water + W_starter + W_salt;
+        const W_loaf = W_total_dough / num_loaves;
+
+        const true_hyd_pct = (W_total_water / W_total_flour) * 100;
+        const true_salt_pct = (W_salt / W_total_flour) * 100;
+
+        // Flour badges in Card 3
+        setBreadText(
+          "bread-wheat-pct-badge",
+          `${Math.round(wheat_pct)}% (${formatGramDisplay(W_wheat, false)})`
+        );
+        setBreadText("bread-wholewheat-gram-badge", `${Math.round(ww_pct)}% (${formatGramDisplay(W_ww, false)})`);
+        setBreadText("bread-rye-gram-badge", `${Math.round(rye_pct)}% (${formatGramDisplay(W_rye, false)})`);
+        setBreadText("bread-spelt-gram-badge", `${Math.round(spelt_pct)}% (${formatGramDisplay(W_spelt, false)})`);
+
+        // Warnings for high rye or high spelt
+        if (elFlourWarning) {
+          const warnings = [];
+          if (rye_pct > 40) {
+            warnings.push(
+              "⚠️ Rudzu milti pārsniedz 40% — mīkla būs lipīga un neveidos klasisku lipekļa tīklu. Locīšanu veic ar mitrām rokām vai cep maizes veidnē."
+            );
+          }
+          if (spelt_pct > 60) {
+            warnings.push(
+              "ℹ️ Augsts speltas miltu īpatsvars (> 60%) — spelta ātrāk pārmīcās un mīkla ir maigāka; locīšanu veic saudzīgi."
+            );
+          }
+          if (warnings.length > 0) {
+            elFlourWarning.textContent = warnings.join(" ");
+            elFlourWarning.hidden = false;
+          } else {
+            elFlourWarning.hidden = true;
+          }
+        }
+
+        // Bulk fermentation estimate
+        const bulkEst = estimateBulkFermentation(temp_c, starter_pct);
+        setBreadText("bread-out-bulk-inline", bulkEst.longLabel);
+        setBreadText("bread-out-bulk-time", bulkEst.shortLabel);
+        const summaryBulkLabel = breadCalcEl.querySelector(
+          "#bread-out-bulk-time"
+        )?.previousElementSibling;
+        if (summaryBulkLabel) {
+          const tempStr = temp_c % 1 === 0 ? temp_c.toFixed(0) : temp_c.toFixed(1);
+          summaryBulkLabel.textContent = `Pirmā raudzēšana (${tempStr} °C)`;
+        }
+
+        // Update Summary Bar
+        setBreadText("bread-out-total-dough", formatGramDisplay(W_total_dough, false));
+        setBreadText("bread-out-loaf-weight", formatGramDisplay(W_loaf, false));
+        setBreadText("bread-out-true-hydration", `${true_hyd_pct.toFixed(1)}%`);
+
+        // Update Technical Details
+        setBreadText("bread-tech-bowl-flour", `${F_bowl.toFixed(1)} g`);
+        setBreadText(
+          "bread-tech-flour-split",
+          `${W_wheat.toFixed(1)} / ${W_ww.toFixed(1)} / ${W_rye.toFixed(1)} / ${W_spelt.toFixed(1)} g`
+        );
+        setBreadText("bread-tech-eff-hyd", `${eff_hyd_pct.toFixed(2)}%`);
+        setBreadText("bread-tech-water", `${W_water.toFixed(1)} g`);
+        setBreadText("bread-tech-starter", `${W_starter.toFixed(1)} g`);
+        setBreadText(
+          "bread-tech-starter-split",
+          `${W_starter_flour.toFixed(1)} g / ${W_starter_water.toFixed(1)} g`
+        );
+        setBreadText("bread-tech-salt", `${W_salt.toFixed(1)} g`);
+        setBreadText("bread-tech-total-flour", `${W_total_flour.toFixed(1)} g`);
+        setBreadText("bread-tech-total-water", `${W_total_water.toFixed(1)} g`);
+        setBreadText("bread-tech-true-hyd", `${true_hyd_pct.toFixed(2)}%`);
+        setBreadText("bread-tech-true-salt", `${true_salt_pct.toFixed(2)}%`);
+        setBreadText("bread-tech-check", `${W_total_dough.toFixed(1)} g`);
+
+        // Update Header Servings
+        if (servingsEl) {
+          servingsEl.textContent = `${num_loaves} (${Math.round(W_loaf)} g/gab.)`;
+        }
+
+        // Update Ingredient Checklist Rows (hide 0 g specialty flours)
+        const ingredientMap = {
+          add_starter: { val: W_starter, halfStep: false, hideWhenZero: false },
+          add_water: { val: W_water, halfStep: false, hideWhenZero: false },
+          flour_wheat: { val: W_wheat, halfStep: false, hideWhenZero: true },
+          flour_wholewheat: { val: W_ww, halfStep: false, hideWhenZero: true },
+          flour_rye: { val: W_rye, halfStep: false, hideWhenZero: true },
+          flour_spelt: { val: W_spelt, halfStep: false, hideWhenZero: true },
+          add_salt: { val: W_salt, halfStep: true, hideWhenZero: false }
+        };
+
+        Object.keys(ingredientMap).forEach((key) => {
+          const cfg = ingredientMap[key];
+          const formatted = formatGramDisplay(cfg.val, cfg.halfStep);
+          const amountNode = recipePage.querySelector(`[data-calc-amount="${key}"]`);
+          const rowNode = recipePage.querySelector(`[data-calc-row="${key}"]`);
+          if (amountNode) {
+            amountNode.textContent = formatted;
+            amountNode.dataset.baseAmount = formatted;
+          }
+          if (rowNode) {
+            const isZero = cfg.val < 0.5;
+            if (cfg.hideWhenZero) {
+              rowNode.hidden = isZero;
+            } else {
+              rowNode.classList.toggle("ingredient-unused", isZero);
+            }
+          }
+        });
+
+        // Update dynamic starter description
+        const starterNameNode = recipePage.querySelector('[data-calc-name="add_starter"]');
+        if (starterNameNode) {
+          starterNameNode.textContent = `aktīvs, burbuļojošs ieraugs (${Math.round(starter_hyd_pct)}% hidratācija: ${formatGramDisplay(W_starter_flour, false)} milti + ${formatGramDisplay(W_starter_water, false)} ūdens)`;
+        }
+
+        // Build readable inline flour breakdown
+        const breakdownParts = [];
+        if (W_wheat >= 0.5) breakdownParts.push(`${formatGramDisplay(W_wheat, false)} kviešu`);
+        if (W_ww >= 0.5) breakdownParts.push(`${formatGramDisplay(W_ww, false)} pilngraudu kviešu`);
+        if (W_rye >= 0.5) breakdownParts.push(`${formatGramDisplay(W_rye, false)} rudzu`);
+        if (W_spelt >= 0.5) breakdownParts.push(`${formatGramDisplay(W_spelt, false)} speltas`);
+
+        const tempInlineStr = temp_c % 1 === 0 ? `${temp_c.toFixed(0)} °C` : `${temp_c.toFixed(1)} °C`;
+        const inlineValues = {
+          add_starter: formatGramDisplay(W_starter, false),
+          add_water: formatGramDisplay(W_water, false),
+          flour_total: formatGramDisplay(F_bowl, false),
+          flour_breakdown: breakdownParts.join(" + "),
+          add_salt: formatGramDisplay(W_salt, true),
+          total_dough: formatGramDisplay(W_total_dough, false),
+          kitchen_temp: tempInlineStr,
+          starter_pct_label: `${Math.round(starter_pct)}%`,
+          bulk_time: bulkEst.longLabel,
+          num_loaves: `${num_loaves} gab.`,
+          num_loaves_bake: `${num_loaves} gab.`,
+          loaf_weight: formatGramDisplay(W_loaf, false)
+        };
+
+        Object.keys(inlineValues).forEach((key) => {
+          recipePage.querySelectorAll(`[data-calc-inline="${key}"]`).forEach((el) => {
+            el.textContent = inlineValues[key];
+          });
+        });
+      }
+
+      function bindBreadRangeAndNumber(rangeEl, numEl, onBeforeCalc) {
+        if (!rangeEl || !numEl) return;
+        rangeEl.addEventListener("input", () => {
+          numEl.value = rangeEl.value;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          if (onBeforeCalc) onBeforeCalc();
+          recalculateBreadDough();
+        });
+        numEl.addEventListener("input", () => {
+          rangeEl.value = numEl.value;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          if (onBeforeCalc) onBeforeCalc();
+          recalculateBreadDough();
+        });
+      }
+
+      bindBreadRangeAndNumber(elFlourPerLoafRange, elFlourPerLoaf);
+      bindBreadRangeAndNumber(elTempRange, elTemp);
+      bindBreadRangeAndNumber(elHydrationRange, elHydration);
+      bindBreadRangeAndNumber(elStarterPctRange, elStarterPct);
+      bindBreadRangeAndNumber(elSaltPctRange, elSaltPct);
+      bindBreadRangeAndNumber(elWholewheatPctRange, elWholewheatPct, () =>
+        rebalanceSpecialtyFlours("ww")
+      );
+      bindBreadRangeAndNumber(elRyePctRange, elRyePct, () =>
+        rebalanceSpecialtyFlours("rye")
+      );
+      bindBreadRangeAndNumber(elSpeltPctRange, elSpeltPct, () =>
+        rebalanceSpecialtyFlours("spelt")
+      );
+
+      [elNumLoaves, elStarterHyd].forEach((inputEl) => {
+        if (!inputEl) return;
+        inputEl.addEventListener("input", () => {
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateBreadDough();
+        });
+      });
+
+      if (elAutoHydration) {
+        elAutoHydration.addEventListener("change", () => {
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateBreadDough();
+        });
+      }
+
+      // Loaf size chips
+      sizeChips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          const f = chip.dataset.flour;
+          if (elFlourPerLoaf) elFlourPerLoaf.value = f;
+          if (elFlourPerLoafRange) elFlourPerLoafRange.value = f;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateBreadDough();
+        });
+      });
+
+      // Preset buttons
+      presetBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const presetKey = btn.dataset.preset;
+          const p = BREAD_PRESETS[presetKey];
+          if (!p) return;
+
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          presetBaseLoaves = p.num_loaves;
+          elNumLoaves.value = p.num_loaves;
+          elFlourPerLoaf.value = p.flour_per_loaf;
+          if (elFlourPerLoafRange) elFlourPerLoafRange.value = p.flour_per_loaf;
+          elTemp.value = p.temp_c;
+          if (elTempRange) elTempRange.value = p.temp_c;
+          elHydration.value = p.hydration_pct;
+          if (elHydrationRange) elHydrationRange.value = p.hydration_pct;
+          elStarterPct.value = p.starter_pct;
+          if (elStarterPctRange) elStarterPctRange.value = p.starter_pct;
+          elSaltPct.value = p.salt_pct;
+          if (elSaltPctRange) elSaltPctRange.value = p.salt_pct;
+          elStarterHyd.value = p.starter_hyd_pct;
+          elWholewheatPct.value = p.wholewheat_pct;
+          if (elWholewheatPctRange) elWholewheatPctRange.value = p.wholewheat_pct;
+          elRyePct.value = p.rye_pct;
+          if (elRyePctRange) elRyePctRange.value = p.rye_pct;
+          elSpeltPct.value = p.spelt_pct;
+          if (elSpeltPctRange) elSpeltPctRange.value = p.spelt_pct;
+          if (elAutoHydration) elAutoHydration.checked = Boolean(p.auto_hydration);
+
+          scaleBtns.forEach((b) => b.classList.toggle("active", b.dataset.scale === "1"));
+          recalculateBreadDough();
+        });
+      });
+
+      // Connect scale buttons (0.5x, 1x, 2x, 3x) to calculator's num_loaves or flour_per_loaf
+      scaleBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const factor = parseFloat(btn.dataset.scale) || 1;
+          scaleBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          elNumLoaves.value = Math.max(1, Math.round(presetBaseLoaves * factor));
+          recalculateBreadDough();
+        });
+      });
+
+      // Initial calculation on page load
+      recalculateBreadDough();
     } else {
       // Standard Recipe Portion Scaling
       scaleBtns.forEach((btn) => {
@@ -992,20 +1483,20 @@
 
           if (titleEl && parsed.title) titleEl.textContent = parsed.title;
           if (leadEl && parsed.description) leadEl.textContent = parsed.description;
-          if (parsed.servings && !pizzaCalcEl) {
+          if (parsed.servings && !hasCalculator) {
             baseServings = parsed.servings;
           }
-          if (ingredientsGroupsEl && parsed.ingredients.length > 0 && !pizzaCalcEl) {
+          if (ingredientsGroupsEl && parsed.ingredients.length > 0 && !hasCalculator) {
             ingredientsGroupsEl.innerHTML = renderIngredientsGroupsHtml(parsed.ingredients);
           }
-          if (instructionEl && !pizzaCalcEl) {
+          if (instructionEl && !hasCalculator) {
             instructionEl.innerHTML = parsed.bodyHtml;
           }
 
           bindInteractiveRecipeElements();
 
           // Re-apply active portion scale factor
-          if (!pizzaCalcEl) {
+          if (!hasCalculator) {
             const activeScaleBtn = recipePage.querySelector(".scale-btn.active");
             const factor = activeScaleBtn
               ? parseFloat(activeScaleBtn.dataset.scale) || 1

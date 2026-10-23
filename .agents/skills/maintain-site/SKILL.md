@@ -28,6 +28,9 @@ The repository is built natively by GitHub Pages using Jekyll:
    - Whenever you add a new metadata field to recipes that should be searchable, expose it in `search.json` using `| jsonify`.
 4. **Interactive Recipe Features (`_layouts/recipe.html` & `assets/js/search.js`)**:
    - **Portion Scaler**: Parses leading numbers in `.ingredient-amount` (`data-base-amount`) and scales them by `0.5x`, `1x`, `2x`, or `3x` while keeping `g` and `ml` units intact.
+   - **Interactive Dough Calculators (`page.calculator`)**:
+     - `pizza_dough` (inline in `_layouts/recipe.html` + `#pizza-calculator` in `assets/js/search.js`): scales by pizza count, diameter, and thickness factor; supports yeast/sourdough hybrid slider.
+     - `sourdough_bread` (`_includes/bread-calculator.html` + `#bread-calculator` in `assets/js/search.js`): uses baker's percentages relative to bowl flour (`flour_per_loaf * num_loaves`), supports a 4-flour blend (`flour_wheat` remainder + `flour_wholewheat`, `flour_rye`, `flour_spelt` sliders with optional hydration auto-correction), and estimates bulk fermentation time from kitchen temperature (`°C`) and starter percentage.
    - **Checklists**: Clicking an ingredient row or instruction step toggles a completed state for easy tracking while cooking.
    - **Screen Wake Lock Toggle (`#wake-lock-toggle`)**: Uses `navigator.wakeLock.request('screen')` (enabled by default and persisted in `localStorage`) with a toggle switch ("Turēt ekrānu ieslēgtu") in `.recipe-meta-bar` so the screen does not dim or lock while cooking. Automatically re-acquires the lock on `visibilitychange`.
    - **Latvian Diacritic Normalization**: Search normalizes Latvian characters (`ā→a`, `č→c`, `ē→e`, `ģ→g`, `ī→i`, `ķ→k`, `ļ→l`, `ņ→n`, `š→s`, `ū→u`, `ž→z`) via `String.prototype.normalize('NFD').replace(/[\u0300-\u036f]/g, '')` so users can search with or without diacritics.
