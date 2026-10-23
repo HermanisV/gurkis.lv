@@ -334,38 +334,60 @@ layout: default
         </div>
       </div>
 
-      <div class="comments-widget-container">
-        {% if site.comments.provider == "giscus" and site.comments.giscus_repo_id != "" %}
-          <script src="https://giscus.app/client.js"
-                  data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
-                  data-repo-id="{{ site.comments.giscus_repo_id }}"
-                  data-category="{{ site.comments.giscus_category | default: 'Receptes' }}"
-                  data-category-id="{{ site.comments.giscus_category_id }}"
-                  data-mapping="{{ site.comments.issue_term | default: 'pathname' }}"
-                  data-strict="0"
-                  data-reactions-enabled="1"
-                  data-emit-metadata="0"
-                  data-input-position="top"
-                  data-theme="{{ site.comments.theme | default: 'light' }}"
-                  data-lang="lv"
-                  crossorigin="anonymous"
-                  async>
-          </script>
-        {% else %}
-          <script src="https://utteranc.es/client.js"
-                  repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
-                  issue-term="{{ site.comments.issue_term | default: 'pathname' }}"
-                  label="{{ site.comments.label | default: 'receptes-piezimes' }}"
-                  theme="{{ site.comments.theme | default: 'github-light' }}"
-                  crossorigin="anonymous"
-                  async>
-          </script>
-        {% endif %}
+      <!-- Komentāru pievienošanas logs (bez jau pievienotajiem komentāriem) -->
+      <div class="recipe-comment-box" id="recipe-comment-box">
+        <div class="comment-input-wrap">
+          <textarea
+            id="recipe-comment-textarea"
+            class="recipe-comment-textarea"
+            rows="3"
+            placeholder="Ieraksti savu novērojumu vai ieteikumu nākamajai gatavošanas reizei (piem., par cepšanas laiku, garšvielām vai proporcijām)..."
+            aria-label="Piezīme vai uzlabojums receptei"
+          ></textarea>
+        </div>
+        <div class="comment-box-actions">
+          <div class="comment-box-meta">
+            <span class="panel-hint">Piezīme pie versijas: <strong id="recipe-comment-active-version">v1</strong></span>
+          </div>
+          <div class="comment-box-btns">
+            <a
+              id="recipe-view-github-issue-link"
+              href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-outline-sm"
+              title="Atvērt receptes diskusiju GitHub"
+              hidden
+            >
+              Skatīt GitHub ↗
+            </a>
+            <button
+              type="button"
+              id="recipe-comment-submit-btn"
+              class="btn-primary-cta"
+            >
+              <span aria-hidden="true">💬</span> Pievienot piezīmi GitHub ↗
+            </button>
+          </div>
+        </div>
+        <div id="recipe-comment-toast" class="recipe-comment-toast" hidden role="status" aria-live="polite"></div>
       </div>
 
+      <!-- Komentāru saraksta sadaļa: Pievienotās piezīmes (ar versijas atzīmi) -->
       <div id="recipe-versioned-comments" class="versioned-comments-section" hidden>
-        <div class="versioned-comments-title">Pievienotās piezīmes (ar versijas atzīmi)</div>
+        <div class="versioned-comments-header">
+          <h3 class="versioned-comments-title">Pievienotās piezīmes (ar versijas atzīmi)</h3>
+          <span class="badge badge-tag" id="recipe-comments-count-badge" hidden></span>
+        </div>
+        <div id="recipe-comments-empty" class="panel-hint" hidden>
+          Šai receptei vēl nav pievienotu piezīmju. Esi pirmais, kurš pieraksta savus novērojumus augstāk!
+        </div>
         <div id="recipe-versioned-comments-list" class="versioned-comments-list"></div>
+        <div id="recipe-comments-pagination" class="comments-pagination-wrap" hidden>
+          <button type="button" id="load-more-comments-btn" class="btn-outline-sm btn-load-more">
+            Rādīt vēl 5 piezīmes
+          </button>
+        </div>
       </div>
     </section>
     {% endif %}
