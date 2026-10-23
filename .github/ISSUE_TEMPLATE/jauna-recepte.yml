@@ -1,0 +1,25 @@
+name: "🍲 Jauna recepte"
+description: "Iesaki pievienot jaunu recepti (no saites vai savām piezīmēm)"
+title: "[Jauna recepte] "
+labels: ["pieprasijums", "jauna-recepte"]
+body:
+  - type: input
+    id: recipe_title
+    attributes:
+      label: "Ēdiena nosaukums"
+      description: "Kā sauc recepti, kuru vēlies pievienot?"
+      placeholder: "Piem., Klasiskais tiramisu vai Kraukšķīgi kartupeļu plācenīši"
+    validations:
+      required: true
+  - type: input
+    id: source_url
+    attributes:
+      label: "Saite uz oriģinālo recepti (ja ir)"
+      description: "Iekopē pilnu URL, ja recepte atrodama citā vietnē (var būt angļu vai citā valodā)."
+      placeholder: "https://..."
+  - type: textarea
+    id: notes
+    attributes:
+      label: "Sastāvdaļas, pagatavošana vai piezīmes"
+      description: "Ja nav saites (vai vēlies ko pielāgot oriģinālajai receptei), uzraksti sastāvdaļas un pagatavošanas gaitu brīvā formā."
+      placeholder: "Sastāvdaļas, proporcijas un gatavošanas soļi..."

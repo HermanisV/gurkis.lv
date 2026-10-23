@@ -1486,5 +1486,424 @@
       loadCommitHistory();
     }
   }
+
+  // 3. Page Requests ("Pievienot ko jaunu") Interactive Form & GitHub Issues Board
+  const requestsRoot = document.getElementById("page-requests-root");
+  if (requestsRoot) {
+    const repo = requestsRoot.dataset.repo || "HermanisV/gurkis.lv";
+    const typeBtns = Array.from(requestsRoot.querySelectorAll(".request-type-btn"));
+    const recipeSelectGroup = document.getElementById("request-recipe-select-group");
+    const targetRecipeSelect = document.getElementById("request-target-recipe");
+    const titleInput = document.getElementById("request-title-input");
+    const urlGroup = document.getElementById("request-url-group");
+    const sourceUrlInput = document.getElementById("request-source-url");
+    const bodyLabel = document.getElementById("request-body-label");
+    const bodyInput = document.getElementById("request-body-input");
+    const submitGithubBtn = document.getElementById("request-submit-github-btn");
+
+    const tabBtns = Array.from(requestsRoot.querySelectorAll(".request-tab-btn"));
+    const openCountEl = document.getElementById("open-requests-count");
+    const closedCountEl = document.getElementById("closed-requests-count");
+    const boardStatus = document.getElementById("requests-board-status");
+    const boardList = document.getElementById("requests-board-list");
+    const refreshBtn = document.getElementById("refresh-requests-btn");
+
+    let activeType = "new-recipe";
+    let activeStateFilter = "open";
+    let allRequestItems = [];
+
+    const typeConfig = {
+      "new-recipe": {
+        prefix: "[Jauna recepte]",
+        label: "pieprasijums,jauna-recepte",
+        badgeText: "🍲 Jauna recepte",
+        titlePlaceholder: "Piem., Kraukšķīgi kartupeļu plācenīši vai Tiramisu recepte",
+        bodyLabelText: "Receptes apraksts, sastāvdaļas vai piezīmes *",
+        bodyPlaceholder:
+          "Iekopē saiti uz recepti, brīvā formā uzraksti sastāvdaļas un pagatavošanu vai norādi, ko vēlies pievienot..."
+      },
+      "recipe-update": {
+        prefix: "[Izmaiņas receptē]",
+        label: "pieprasijums,receptes-izmainas",
+        badgeText: "✏️ Izmaiņas receptē",
+        titlePlaceholder: "Piem., Samazināt etiķa daudzumu vai precizēt cepšanas laiku",
+        bodyLabelText: "Ko vēlies mainīt vai uzlabot šajā receptē? *",
+        bodyPlaceholder:
+          "Apraksti izmaiņas sastāvdaļu daudzumos, gatavošanas soļos vai padomos..."
+      },
+      "site-change": {
+        prefix: "[Lapas uzlabojums]",
+        label: "pieprasijums,lapas-uzlabojums",
+        badgeText: "✨ Lapas uzlabojums",
+        titlePlaceholder: "Piem., Pievienot taimeri gatavošanas soļiem vai drukas režīmu",
+        bodyLabelText: "Vēlamo izmaiņu vai funkcijas apraksts *",
+        bodyPlaceholder:
+          "Apraksti, kādu jaunu funkciju, pogu vai dizaina uzlabojumu vēlies redzēt lapā..."
+      }
+    };
+
+    function formatReqDate(isoStr) {
+      if (!isoStr) return "";
+      const d = new Date(isoStr);
+      if (isNaN(d.getTime())) return isoStr;
+      return d.toLocaleDateString("lv-LV", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
+
+    function updateGithubSubmitHref() {
+      if (!submitGithubBtn) return;
+      const cfg = typeConfig[activeType] || typeConfig["new-recipe"];
+      const rawTitle = (titleInput && titleInput.value.trim()) || "";
+      const rawUrl = (sourceUrlInput && sourceUrlInput.value.trim()) || "";
+      const rawBody = (bodyInput && bodyInput.value.trim()) || "";
+      const selectedSlug = (targetRecipeSelect && targetRecipeSelect.value) || "";
+      const selectedOpt =
+        targetRecipeSelect &&
+        targetRecipeSelect.selectedOptions &&
+        targetRecipeSelect.selectedOptions[0];
+      const selectedRecipeTitle =
+        (selectedOpt && selectedOpt.dataset && selectedOpt.dataset.title) || selectedSlug;
+
+      let issueTitle = rawTitle
+        ? `${cfg.prefix} ${rawTitle}`
+        : `${cfg.prefix} `;
+      if (activeType === "recipe-update" && selectedSlug && !rawTitle) {
+        issueTitle = `${cfg.prefix} ${selectedRecipeTitle} (${selectedSlug})`;
+      }
+
+      const bodyParts = [];
+      bodyParts.push(`### Pieprasījuma veids\n${cfg.badgeText}`);
+
+      if (activeType === "recipe-update" && selectedSlug) {
+        bodyParts.push(
+          `### Mērķa recepte\n- **Nosaukums:** ${selectedRecipeTitle}\n- **Fails:** \`_recipes/${selectedSlug}.md\`\n- **Saite:** \`/receptes/${selectedSlug}/\``
+        );
+      }
+
+      if (activeType === "new-recipe" && rawUrl) {
+        bodyParts.push(`### Oriģinālās receptes saite (URL)\n${rawUrl}`);
+      }
+
+      bodyParts.push(
+        `### Apraksts un prasības aģentam\n${
+          rawBody || "(Apraksti šeit savu pieprasījumu...)"
+        }`
+      );
+
+      const params = new URLSearchParams();
+      params.set("labels", cfg.label);
+      params.set("title", issueTitle);
+      params.set("body", bodyParts.join("\n\n"));
+
+      submitGithubBtn.href = `https://github.com/${repo}/issues/new?${params.toString()}`;
+    }
+
+    function setRequestType(type) {
+      activeType = typeConfig[type] ? type : "new-recipe";
+      const cfg = typeConfig[activeType];
+
+      typeBtns.forEach((btn) => {
+        const isCurrent = btn.dataset.type === activeType;
+        btn.classList.toggle("active", isCurrent);
+        btn.setAttribute("aria-checked", isCurrent ? "true" : "false");
+      });
+
+      if (recipeSelectGroup) {
+        recipeSelectGroup.hidden = activeType !== "recipe-update";
+      }
+      if (urlGroup) {
+        urlGroup.hidden = activeType !== "new-recipe";
+      }
+      if (titleInput) {
+        titleInput.placeholder = cfg.titlePlaceholder;
+      }
+      if (bodyLabel) {
+        bodyLabel.innerHTML = `${cfg.bodyLabelText.replace(
+          " *",
+          ""
+        )} <span class="required-mark">*</span>`;
+      }
+      if (bodyInput) {
+        bodyInput.placeholder = cfg.bodyPlaceholder;
+      }
+
+      updateGithubSubmitHref();
+    }
+
+    typeBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setRequestType(btn.dataset.type);
+      });
+    });
+
+    [titleInput, sourceUrlInput, bodyInput, targetRecipeSelect].forEach((el) => {
+      if (el) {
+        el.addEventListener("input", updateGithubSubmitHref);
+        el.addEventListener("change", updateGithubSubmitHref);
+      }
+    });
+
+    setRequestType("new-recipe");
+
+    function inferRequestCategoryLabel(issue) {
+      const title = String(issue.title || "").toLowerCase();
+      const labels = Array.isArray(issue.labels)
+        ? issue.labels.map((l) => String(l.name || "").toLowerCase())
+        : [];
+      if (
+        labels.includes("jauna-recepte") ||
+        title.includes("[jauna recepte]") ||
+        title.includes("jauna recepte")
+      ) {
+        return "🍲 Jauna recepte";
+      }
+      if (
+        labels.includes("receptes-izmainas") ||
+        title.includes("[izmaiņas receptē]") ||
+        title.includes("izmaiņas receptē")
+      ) {
+        return "✏️ Izmaiņas receptē";
+      }
+      if (
+        labels.includes("lapas-uzlabojums") ||
+        title.includes("[lapas uzlabojums]")
+      ) {
+        return "✨ Lapas uzlabojums";
+      }
+      return "📌 Pieprasījums";
+    }
+
+    function cleanBodyPreview(rawBody) {
+      return String(rawBody || "")
+        .replace(/###\s+Pieprasījuma veids[\s\S]*?(?=###|$)/i, "")
+        .replace(/###\s+[^\n]+\n/g, "")
+        .trim();
+    }
+
+    function renderRequestsBoard() {
+      if (!boardList || !boardStatus) return;
+
+      const openItems = allRequestItems.filter((item) => item.state === "open");
+      const closedItems = allRequestItems.filter((item) => item.state === "closed");
+
+      if (openCountEl) openCountEl.textContent = String(openItems.length);
+      if (closedCountEl) closedCountEl.textContent = String(closedItems.length);
+
+      const filtered = allRequestItems.filter((item) => {
+        if (activeStateFilter === "all") return true;
+        return item.state === activeStateFilter;
+      });
+
+      if (filtered.length === 0) {
+        boardList.hidden = true;
+        boardStatus.hidden = false;
+        if (activeStateFilter === "open") {
+          boardStatus.textContent =
+            "Šobrīd nav neviena atvērta pieprasījuma. Iesniedz jaunu pieprasījumu kreisajā pusē!";
+        } else if (activeStateFilter === "closed") {
+          boardStatus.textContent = "Vēl nav neviena izpildīta (aizvērta) pieprasījuma.";
+        } else {
+          boardStatus.textContent = "Pieprasījumu saraksts ir tukšs.";
+        }
+        return;
+      }
+
+      boardStatus.hidden = true;
+      boardList.innerHTML = "";
+
+      filtered.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "request-item-card";
+
+        const topRow = document.createElement("div");
+        topRow.className = "request-item-top";
+
+        const badgesWrap = document.createElement("div");
+        badgesWrap.className = "request-item-badges";
+
+        const statusBadge = document.createElement("span");
+        const isOpen = item.state === "open";
+        statusBadge.className = `request-status-pill ${
+          isOpen ? "request-status-open" : "request-status-closed"
+        }`;
+        statusBadge.textContent = isOpen ? "⏳ Gaida izpildi" : "✅ Izpildīts";
+
+        const typeBadge = document.createElement("span");
+        typeBadge.className = "request-type-pill";
+        typeBadge.textContent = item.categoryLabel;
+
+        badgesWrap.appendChild(statusBadge);
+        badgesWrap.appendChild(typeBadge);
+
+        const numSpan = document.createElement("span");
+        numSpan.className = "history-author";
+        numSpan.textContent = `#${item.number}`;
+
+        topRow.appendChild(badgesWrap);
+        topRow.appendChild(numSpan);
+
+        const titleH3 = document.createElement("h3");
+        titleH3.className = "request-item-title";
+        const titleLink = document.createElement("a");
+        titleLink.href = item.url;
+        titleLink.target = "_blank";
+        titleLink.rel = "noopener noreferrer";
+        titleLink.textContent = item.title;
+        titleH3.appendChild(titleLink);
+
+        card.appendChild(topRow);
+        card.appendChild(titleH3);
+
+        if (item.preview) {
+          const bodyP = document.createElement("p");
+          bodyP.className = "request-item-body";
+          bodyP.textContent = item.preview;
+          card.appendChild(bodyP);
+        }
+
+        const footer = document.createElement("div");
+        footer.className = "request-item-footer";
+
+        const metaSpan = document.createElement("span");
+        metaSpan.textContent = `@${item.author} · ${formatReqDate(item.created_at)}`;
+
+        const editLink = document.createElement("a");
+        editLink.className = "request-item-link";
+        editLink.href = item.url;
+        editLink.target = "_blank";
+        editLink.rel = "noopener noreferrer";
+        editLink.textContent = isOpen ? "Rediģēt / komentēt GitHub ↗" : "Skatīt GitHub ↗";
+
+        footer.appendChild(metaSpan);
+        footer.appendChild(editLink);
+        card.appendChild(footer);
+
+        boardList.appendChild(card);
+      });
+
+      boardList.hidden = false;
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeStateFilter = btn.dataset.state || "open";
+        tabBtns.forEach((b) => {
+          const isCurrent = b === btn;
+          b.classList.toggle("active", isCurrent);
+          b.setAttribute("aria-selected", isCurrent ? "true" : "false");
+        });
+        renderRequestsBoard();
+      });
+    });
+
+    async function fetchPageRequests() {
+      if (boardStatus) {
+        boardStatus.textContent = "Ielādē pieprasījumus no GitHub…";
+        boardStatus.hidden = false;
+      }
+      if (boardList) {
+        boardList.hidden = true;
+      }
+
+      try {
+        const apiUrl = `https://api.github.com/repos/${repo}/issues?state=all&per_page=100`;
+        const resp = await fetch(apiUrl, {
+          headers: { Accept: "application/vnd.github+json" }
+        });
+        if (!resp.ok) {
+          throw new Error(`GitHub API ${resp.status}`);
+        }
+
+        const rawIssues = await resp.json();
+        if (!Array.isArray(rawIssues)) {
+          throw new Error("Invalid response");
+        }
+
+        const items = [];
+        for (let i = 0; i < rawIssues.length; i++) {
+          const iss = rawIssues[i];
+          if (iss.pull_request) continue;
+
+          const author = (iss.user && iss.user.login) || "Autors";
+          const title = String(iss.title || "");
+          const isRecipeUtterancesThread =
+            (author === "utterances-bot" || title.includes("receptes/")) &&
+            !title.includes("pievienot");
+          const isPievienotUtterancesThread =
+            (author === "utterances-bot" || title.startsWith("pievienot")) &&
+            title.includes("pievienot");
+
+          if (isPievienotUtterancesThread) {
+            if (iss.comments > 0 && iss.comments_url) {
+              try {
+                const cResp = await fetch(iss.comments_url, {
+                  headers: { Accept: "application/vnd.github+json" }
+                });
+                if (cResp.ok) {
+                  const cList = await cResp.json();
+                  if (Array.isArray(cList)) {
+                    cList.forEach((c) => {
+                      if (!c || !c.body) return;
+                      const firstLine = String(c.body).trim().split(/\r?\n/)[0];
+                      items.push({
+                        number: `${iss.number} (komentārs)`,
+                        state: iss.state || "open",
+                        title:
+                          firstLine.length > 70
+                            ? firstLine.slice(0, 70) + "…"
+                            : firstLine || "Ātrais komentāra pieprasījums",
+                        preview: String(c.body).trim(),
+                        categoryLabel: "💬 Komentāra pieprasījums",
+                        author: (c.user && c.user.login) || "Autors",
+                        created_at: c.created_at,
+                        url: c.html_url || iss.html_url
+                      });
+                    });
+                  }
+                }
+              } catch (_e) {
+                // Ignore comment fetch errors
+              }
+            }
+            continue;
+          }
+
+          if (isRecipeUtterancesThread) {
+            continue;
+          }
+
+          items.push({
+            number: iss.number,
+            state: iss.state || "open",
+            title: title.replace(/^\[(Jauna recepte|Izmaiņas receptē|Lapas uzlabojums|Pieprasījums)\]\s*/i, "") || title,
+            preview: cleanBodyPreview(iss.body),
+            categoryLabel: inferRequestCategoryLabel(iss),
+            author: author,
+            created_at: iss.created_at,
+            url: iss.html_url
+          });
+        }
+
+        allRequestItems = items;
+        renderRequestsBoard();
+      } catch (_err) {
+        if (boardStatus) {
+          boardStatus.innerHTML = `Neizdevās automātiski ielādēt pieprasījumus no GitHub API. <a href="https://github.com/${repo}/issues" target="_blank" rel="noopener noreferrer">Skatīt visus pieprasījumus GitHub ↗</a>`;
+          boardStatus.hidden = false;
+        }
+      }
+    }
+
+    if (refreshBtn) {
+      refreshBtn.addEventListener("click", fetchPageRequests);
+    }
+
+    fetchPageRequests();
+  }
 })();
 

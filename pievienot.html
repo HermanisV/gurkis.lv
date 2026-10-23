@@ -1,0 +1,184 @@
+---
+layout: default
+title: Pievienot ko jaunu
+description: Iesniedz jaunu recepti, ieteikumu esošai receptei vai ideju lapas uzlabojumam ar savu GitHub kontu.
+permalink: /pievienot/
+---
+
+<div class="request-page" id="page-requests-root"
+     data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+     data-branch="{{ site.github_branch | default: 'main' }}">
+  <div class="recipe-breadcrumb">
+    <a href="{{ '/' | relative_url }}">&larr; Atpakaļ uz recepšu katalogu</a>
+  </div>
+
+  <header class="recipe-header request-hero-header">
+    <div class="recipe-badges">
+      <span class="badge badge-category">Kopienas un autora pieprasījumi</span>
+      <span class="badge badge-tag">#jauna-recepte</span>
+      <span class="badge badge-tag">#uzlabojumi</span>
+    </div>
+    <h1 class="recipe-title">Pievienot ko jaunu</h1>
+    <p class="recipe-lead">
+      Šeit ar savu GitHub kontu vari iesniegt vai rediģēt pieprasījumus lapai — jaunu recepti (no saites vai piezīmēm), izmaiņas esošā receptē vai jaunu lapas funkciju. AI aģents šos pieprasījumus nolasa, ievieš un pēc izpildes automātiski aizver.
+    </p>
+  </header>
+
+  <div class="request-layout-grid">
+    <!-- Left / Top: New Request Form -->
+    <section class="request-form-panel" aria-labelledby="new-request-heading">
+      <div class="panel-header">
+        <h2 id="new-request-heading">1. Izveidot jaunu pieprasījumu</h2>
+      </div>
+      <p class="panel-hint">Izvēlies pieprasījuma veidu un aizpildi laukus — nospiežot pogu, atvērsies jau sagatavots GitHub Issue tavā kontā.</p>
+
+      <div class="request-type-selector" role="radiogroup" aria-label="Pieprasījuma veids">
+        <button type="button" class="request-type-btn active" data-type="new-recipe" role="radio" aria-checked="true">
+          <span aria-hidden="true">🍲</span> Jauna recepte
+        </button>
+        <button type="button" class="request-type-btn" data-type="recipe-update" role="radio" aria-checked="false">
+          <span aria-hidden="true">✏️</span> Izmaiņas receptē
+        </button>
+        <button type="button" class="request-type-btn" data-type="site-change" role="radio" aria-checked="false">
+          <span aria-hidden="true">✨</span> Lapas uzlabojums
+        </button>
+      </div>
+
+      <form id="github-request-form" class="request-form" novalidate>
+        <div class="request-field" id="request-recipe-select-group" hidden>
+          <label for="request-target-recipe" class="request-label">Kuru recepti vēlies mainīt?</label>
+          <select id="request-target-recipe" class="request-input">
+            <option value="">— Izvēlies recepti no kataloga —</option>
+            {% assign sorted_by_title = site.recipes | sort: "title" %}
+            {% for r in sorted_by_title %}
+              {% assign r_slug = r.path | split: "/" | last | remove: ".md" %}
+              <option value="{{ r_slug }}" data-title="{{ r.title | escape }}" data-url="{{ r.url | relative_url }}">{{ r.title }} ({{ r_slug }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="request-field">
+          <label for="request-title-input" class="request-label">Īss virsraksts <span class="required-mark">*</span></label>
+          <input
+            type="text"
+            id="request-title-input"
+            class="request-input"
+            placeholder="Piem., Kraukšķīgi kartupeļu plācenīši vai Tiramisu recepte"
+            required
+          >
+        </div>
+
+        <div class="request-field" id="request-url-group">
+          <label for="request-source-url" class="request-label">Saite uz oriģinālo recepti (ja ir)</label>
+          <input
+            type="url"
+            id="request-source-url"
+            class="request-input"
+            placeholder="https://..."
+          >
+        </div>
+
+        <div class="request-field">
+          <label for="request-body-input" class="request-label" id="request-body-label">Receptes apraksts, sastāvdaļas vai piezīmes <span class="required-mark">*</span></label>
+          <textarea
+            id="request-body-input"
+            class="request-textarea"
+            rows="6"
+            placeholder="Iekopē saiti uz recepti, brīvā formā uzraksti sastāvdaļas un pagatavošanu vai norādi, ko vēlies pievienot..."
+            required
+          ></textarea>
+        </div>
+
+        <div class="request-actions">
+          <a
+            id="request-submit-github-btn"
+            href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues/new?labels=pieprasijums"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-primary-cta"
+          >
+            Iesniegt pieprasījumu GitHub ↗
+          </a>
+          <a
+            href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues?q=is%3Aissue+label%3Apieprasijums"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-outline-sm"
+          >
+            Mani pieprasījumi GitHub ↗
+          </a>
+        </div>
+      </form>
+    </section>
+
+    <!-- Right / Bottom: Active & Completed Requests Board -->
+    <section class="request-board-panel" aria-labelledby="requests-board-heading">
+      <div class="panel-header request-board-header">
+        <div>
+          <h2 id="requests-board-heading">2. Pieprasījumu saraksts</h2>
+          <p class="panel-hint">Spied uz jebkura pieprasījuma, lai to papildinātu, rediģētu vai komentētu GitHub.</p>
+        </div>
+        <button type="button" id="refresh-requests-btn" class="btn-outline-sm" title="Pārlādēt pieprasījumu sarakstu no GitHub">
+          ↻ Atjaunot
+        </button>
+      </div>
+
+      <div class="request-filter-tabs" role="tablist" aria-label="Filtrēt pieprasījumus pēc statusa">
+        <button type="button" class="request-tab-btn active" data-state="open" role="tab" aria-selected="true">
+          Atvērtie <span class="tab-count-badge" id="open-requests-count">0</span>
+        </button>
+        <button type="button" class="request-tab-btn" data-state="closed" role="tab" aria-selected="false">
+          Izpildītie <span class="tab-count-badge" id="closed-requests-count">0</span>
+        </button>
+        <button type="button" class="request-tab-btn" data-state="all" role="tab" aria-selected="false">
+          Visi
+        </button>
+      </div>
+
+      <div id="requests-board-status" class="history-status">Ielādē pieprasījumus no GitHub…</div>
+      <div id="requests-board-list" class="requests-list" hidden></div>
+    </section>
+  </div>
+
+  {% if site.comments.enabled %}
+  <div class="recipe-extras">
+    <section class="recipe-comments-panel" aria-labelledby="quick-request-comments-heading">
+      <div class="comments-header">
+        <div>
+          <h2 id="quick-request-comments-heading">Ātrais pieprasījums komentārā (bez pāriešanas uz jaunu cilni)</h2>
+          <p class="panel-hint">Ja esi pieslēdzies ar GitHub, vari ierakstīt jaunu receptes saiti vai lapas izmaiņu vēlmi arī tieši šajā komentāru logā — aģents nolasa gan GitHub Issues, gan šīs lapas komentārus.</p>
+        </div>
+      </div>
+
+      <div class="comments-widget-container">
+        {% if site.comments.provider == "giscus" and site.comments.giscus_repo_id != "" %}
+          <script src="https://giscus.app/client.js"
+                  data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+                  data-repo-id="{{ site.comments.giscus_repo_id }}"
+                  data-category="{{ site.comments.giscus_category | default: 'Receptes' }}"
+                  data-category-id="{{ site.comments.giscus_category_id }}"
+                  data-mapping="{{ site.comments.issue_term | default: 'pathname' }}"
+                  data-strict="0"
+                  data-reactions-enabled="1"
+                  data-emit-metadata="0"
+                  data-input-position="top"
+                  data-theme="{{ site.comments.theme | default: 'light' }}"
+                  data-lang="lv"
+                  crossorigin="anonymous"
+                  async>
+          </script>
+        {% else %}
+          <script src="https://utteranc.es/client.js"
+                  repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+                  issue-term="{{ site.comments.issue_term | default: 'pathname' }}"
+                  label="pieprasijums"
+                  theme="{{ site.comments.theme | default: 'github-light' }}"
+                  crossorigin="anonymous"
+                  async>
+          </script>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+  {% endif %}
+</div>
