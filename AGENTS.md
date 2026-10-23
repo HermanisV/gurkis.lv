@@ -81,7 +81,7 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
   - Filenames (`<slug>.md`) must use lowercase ASCII letters, numbers, and hyphens only (transliterate Latvian diacritics: `ā→a`, `č→c`, `ē→e`, `ģ→g`, `ī→i`, `ķ→k`, `ļ→l`, `ņ→n`, `š→s`, `ū→u`, `ž→z`).
 - `_layouts/`: HTML/Liquid layouts (`default.html`, `recipe.html`).
 - `index.html`: Homepage with category filtering and live search.
-- `pievienot.html`: Dedicated page (`/pievienot/`, linked via the header button **"Pievienot ko jaunu"**) where users with a GitHub account can submit, view, and edit requests for new recipes, recipe modifications, or site features via GitHub Issues and Utterances comments.
+- `pievienot.html`: Dedicated page (`/pievienot/`, linked via the header button **"Pievienot ko jaunu"**) where users with a GitHub account can submit, view, and edit requests for new recipes or site features via GitHub Issues.
 - `search.json`: Liquid-generated JSON index for client-side search.
 - `assets/css/style.css` & `assets/js/search.js`: Styling and interactive scripts (search, portion scaling, ingredient checklists).
 
