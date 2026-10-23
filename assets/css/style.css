@@ -629,8 +629,9 @@ body {
   opacity: 0.45;
 }
 
-/* Pizza Dough Calculator */
-.pizza-calculator {
+/* Pizza & Bread Dough Calculators */
+.pizza-calculator,
+.bread-calculator {
   background-color: var(--bg-card);
   border: 2px solid #c5d6c9;
   border-radius: var(--radius-md);
@@ -872,6 +873,67 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 0.45rem 1rem;
+}
+
+.calc-flour-remainder-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  background-color: var(--bg-accent-subtle);
+  border: 1px solid #c5d6c9;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.calc-flour-remainder-badge {
+  font-size: 0.8rem;
+}
+
+.calc-toggle-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  cursor: pointer;
+  margin-top: 0.15rem;
+  user-select: none;
+}
+
+.calc-toggle-row input[type="checkbox"] {
+  margin-top: 0.18rem;
+  accent-color: var(--brand-primary);
+  cursor: pointer;
+}
+
+.calc-toggle-row small {
+  color: var(--brand-primary);
+  font-weight: 700;
+}
+
+.calc-rise-estimate {
+  margin-top: 0.25rem;
+  padding: 0.45rem 0.65rem;
+  background-color: var(--bg-accent-subtle);
+  border: 1px solid #c5d6c9;
+  border-radius: 6px;
+  font-size: 0.81rem;
+  color: var(--text-main);
+  line-height: 1.35;
+}
+
+.calc-warning {
+  padding: 0.55rem 0.7rem;
+  background-color: #fff8e6;
+  border: 1px solid #e6c670;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: #6e4e00;
+  line-height: 1.35;
 }
 
 /* Recipe Extras: Version History & Comments */

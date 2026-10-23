@@ -1,0 +1,194 @@
+<section class="bread-calculator" id="bread-calculator" aria-label="Ierauga maizes kalkulators">
+  <div class="calc-header">
+    <div>
+      <h2 class="calc-title">🍞 Ierauga maizes kalkulators</h2>
+      <p class="calc-subtitle">Pielāgo klaipu skaitu, miltu svaru, hidratāciju, virtuves temperatūru un miltu maisījumu — sastāvdaļu saraksts un pagatavošanas soļi zemāk pārrēķināsies automātiski.</p>
+    </div>
+    <div class="calc-presets" role="group" aria-label="Kalkulatora priekšiestatījumi">
+      <button type="button" class="calc-preset-btn active" data-preset="alexandra">Alexandra (oriģināls, 100% kviešu)</button>
+      <button type="button" class="calc-preset-btn" data-preset="warm_kitchen">Silta virtuve (50 g ierauga)</button>
+      <button type="button" class="calc-preset-btn" data-preset="country_wholewheat">Ar pilngraudu (20%)</button>
+      <button type="button" class="calc-preset-btn" data-preset="rye_blend">Rudzu-kviešu (30% rudzu)</button>
+      <button type="button" class="calc-preset-btn" data-preset="spelt_loaf">Speltas maize (50%)</button>
+    </div>
+  </div>
+
+  <div class="calc-cards-grid">
+    <!-- 1. Loaf & Kitchen Setup -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">1. Klaipi un virtuve</h3>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-num-loaves">Klaipu skaits</label>
+          <span class="calc-unit-badge">gab.</span>
+        </div>
+        <input type="number" id="bread-num-loaves" class="calc-input" min="1" max="20" step="1" value="1">
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-flour-per-loaf">Milti 1 klaipam (bļodā)</label>
+          <span class="calc-unit-badge">g</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-flour-per-loaf-range" class="calc-range" min="250" max="1000" step="25" value="500" aria-label="Miltu svars vienam klaipam gramos">
+          <input type="number" id="bread-flour-per-loaf" class="calc-input calc-input-sm" min="150" max="2000" step="10" value="500">
+        </div>
+        <div class="calc-factor-chips">
+          <button type="button" class="factor-chip bread-size-chip" data-flour="350">Mazs (350 g)</button>
+          <button type="button" class="factor-chip bread-size-chip active" data-flour="500">Standarta (500 g)</button>
+          <button type="button" class="factor-chip bread-size-chip" data-flour="750">Liels (750 g)</button>
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-temp">Virtuves temperatūra</label>
+          <span class="calc-unit-badge" id="bread-temp-badge">21 °C</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-temp-range" class="calc-range" min="16" max="30" step="0.5" value="21" aria-label="Virtuves temperatūra Celsija grādos">
+          <input type="number" id="bread-temp" class="calc-input calc-input-sm" min="14" max="35" step="0.5" value="21">
+        </div>
+        <div class="calc-rise-estimate" id="bread-rise-estimate">
+          ⏱️ Pirmā raudzēšana: <strong id="bread-out-bulk-inline">8–10 stundas</strong> (līdz +50–75% apjomam)
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Dough Formula (Baker's % of bowl flour) -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">2. Mīklas formula (% no bļodas miltiem)</h3>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-hydration">Bāzes hidratācija (ūdens pret miltiem)</label>
+          <span class="calc-unit-badge" id="bread-eff-hydration-badge">75.0%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-hydration-range" class="calc-range" min="60" max="90" step="1" value="75" aria-label="Bāzes hidratācija procentos">
+          <input type="number" id="bread-hydration" class="calc-input calc-input-sm" min="50" max="110" step="0.5" value="75">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-starter-pct">Ieraugs (% no bļodas miltiem)</label>
+          <span class="calc-unit-badge">%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-starter-pct-range" class="calc-range" min="5" max="40" step="1" value="20" aria-label="Ieraugs procentos no miltiem">
+          <input type="number" id="bread-starter-pct" class="calc-input calc-input-sm" min="2" max="60" step="1" value="20">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-salt-pct">Sāls (% no bļodas miltiem)</label>
+          <span class="calc-unit-badge">%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-salt-pct-range" class="calc-range" min="1.5" max="3.0" step="0.1" value="2.4" aria-label="Sāls procentos no miltiem">
+          <input type="number" id="bread-salt-pct" class="calc-input calc-input-sm" min="0" max="5" step="0.1" value="2.4">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-starter-hyd">Ierauga hidratācija</label>
+          <span class="calc-unit-badge">%</span>
+        </div>
+        <input type="number" id="bread-starter-hyd" class="calc-input" min="50" max="200" step="5" value="100">
+      </div>
+    </div>
+
+    <!-- 3. Flour Mix -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">3. Miltu maisījums (kopā 100%)</h3>
+
+      <div class="calc-flour-remainder-row">
+        <span>Kviešu milti (bāze / atlikums)</span>
+        <span class="calc-unit-badge calc-flour-remainder-badge" id="bread-wheat-pct-badge">100% (500 g)</span>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-wholewheat-pct">Pilngraudu kviešu milti</label>
+          <span class="calc-unit-badge" id="bread-wholewheat-gram-badge">0 g</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-wholewheat-pct-range" class="calc-range" min="0" max="100" step="5" value="0" aria-label="Pilngraudu kviešu miltu daļa procentos">
+          <input type="number" id="bread-wholewheat-pct" class="calc-input calc-input-sm" min="0" max="100" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-rye-pct">Rudzu milti</label>
+          <span class="calc-unit-badge" id="bread-rye-gram-badge">0 g</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-rye-pct-range" class="calc-range" min="0" max="100" step="5" value="0" aria-label="Rudzu miltu daļa procentos">
+          <input type="number" id="bread-rye-pct" class="calc-input calc-input-sm" min="0" max="100" step="1" value="0">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="bread-spelt-pct">Speltas milti</label>
+          <span class="calc-unit-badge" id="bread-spelt-gram-badge">0 g</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="bread-spelt-pct-range" class="calc-range" min="0" max="100" step="5" value="0" aria-label="Speltas miltu daļa procentos">
+          <input type="number" id="bread-spelt-pct" class="calc-input calc-input-sm" min="0" max="100" step="1" value="0">
+        </div>
+      </div>
+
+      <label class="calc-toggle-row" for="bread-auto-hydration">
+        <input type="checkbox" id="bread-auto-hydration" checked>
+        <span>Automātiski pielāgot ūdeni miltu maisījumam <small id="bread-hyd-corr-note">(+0.0%)</small></span>
+      </label>
+
+      <div class="calc-warning" id="bread-flour-warning" hidden></div>
+    </div>
+  </div>
+
+  <!-- Calculator Output Summary Bar -->
+  <div class="calc-summary-bar">
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Kopējais mīklas svars</span>
+      <span class="calc-summary-value" id="bread-out-total-dough">987 g</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">1 klaipa svars</span>
+      <span class="calc-summary-value" id="bread-out-loaf-weight">987 g</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Kopējā hidratācija (ar ieraugu)</span>
+      <span class="calc-summary-value" id="bread-out-true-hydration">77.3%</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Pirmā raudzēšana (21 °C)</span>
+      <span class="calc-summary-value" id="bread-out-bulk-time">8–10 h</span>
+    </div>
+  </div>
+
+  <details class="calc-tech-details">
+    <summary>Rādīt detalizētu tehnisko aprēķinu (precizitāte līdz 0.1 g)</summary>
+    <div class="calc-tech-grid">
+      <div><strong>Bļodas milti kopā:</strong> <span id="bread-tech-bowl-flour">500.0 g</span></div>
+      <div><strong>Kviešu / Pilngr. / Rudzu / Speltas:</strong> <span id="bread-tech-flour-split">500.0 / 0.0 / 0.0 / 0.0 g</span></div>
+      <div><strong>Efektīvā bļodas hidratācija:</strong> <span id="bread-tech-eff-hyd">75.00%</span></div>
+      <div><strong>Bļodā — Ūdens:</strong> <span id="bread-tech-water">375.0 g</span></div>
+      <div><strong>Bļodā — Ieraugs:</strong> <span id="bread-tech-starter">100.0 g</span></div>
+      <div><strong>Ierauga milti / ūdens:</strong> <span id="bread-tech-starter-split">50.0 g / 50.0 g</span></div>
+      <div><strong>Bļodā — Sāls:</strong> <span id="bread-tech-salt">12.0 g</span></div>
+      <div><strong>Kopā milti (ar ieraugu):</strong> <span id="bread-tech-total-flour">550.0 g</span></div>
+      <div><strong>Kopā ūdens (ar ieraugu):</strong> <span id="bread-tech-total-water">425.0 g</span></div>
+      <div><strong>Patiesā hidratācija:</strong> <span id="bread-tech-true-hyd">77.27%</span></div>
+      <div><strong>Patiesais sāls % (pret kop. miltiem):</strong> <span id="bread-tech-true-salt">2.18%</span></div>
+      <div><strong>Kontroles kopsvars:</strong> <span id="bread-tech-check">987.0 g</span></div>
+    </div>
+  </details>
+</section>
