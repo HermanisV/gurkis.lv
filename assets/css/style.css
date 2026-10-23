@@ -1209,19 +1209,93 @@ body {
   font-weight: 500;
 }
 
+.recipe-comment-box {
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.15rem;
+  margin-bottom: 1.25rem;
+}
+
+.recipe-comment-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--text-main);
+  background-color: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.9rem;
+  resize: vertical;
+  min-height: 82px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.recipe-comment-textarea:focus {
+  outline: none;
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.comment-box-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.comment-box-meta {
+  font-size: 0.85rem;
+}
+
+.comment-box-meta strong {
+  color: var(--brand-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.comment-box-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.recipe-comment-toast {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: #1b5e20;
+  background-color: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  border-radius: var(--radius-sm);
+}
+
 .versioned-comments-section {
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border-color);
 }
 
+.versioned-comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
 .versioned-comments-title {
+  margin: 0;
   font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   color: var(--text-muted);
-  margin-bottom: 0.65rem;
 }
 
 .versioned-comments-list {
@@ -1244,6 +1318,31 @@ body {
   gap: 0.4rem;
   margin-bottom: 0.4rem;
   font-size: 0.82rem;
+}
+
+.versioned-comment-link {
+  margin-left: auto;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.12s ease;
+}
+
+.versioned-comment-link:hover {
+  color: var(--brand-primary);
+  text-decoration: underline;
+}
+
+.comments-pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.btn-load-more {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.86rem;
 }
 
 .comment-version-badge-btn {

@@ -1214,6 +1214,15 @@
     const versionRestoreBtn = document.getElementById("recipe-version-restore-btn");
     const versionedCommentsSection = document.getElementById("recipe-versioned-comments");
     const versionedCommentsList = document.getElementById("recipe-versioned-comments-list");
+    const recipeCommentTextarea = document.getElementById("recipe-comment-textarea");
+    const recipeCommentSubmitBtn = document.getElementById("recipe-comment-submit-btn");
+    const recipeCommentActiveVersion = document.getElementById("recipe-comment-active-version");
+    const recipeViewIssueLink = document.getElementById("recipe-view-github-issue-link");
+    const recipeCommentToast = document.getElementById("recipe-comment-toast");
+    const recipeCommentsCountBadge = document.getElementById("recipe-comments-count-badge");
+    const recipeCommentsEmpty = document.getElementById("recipe-comments-empty");
+    const recipeCommentsPagination = document.getElementById("recipe-comments-pagination");
+    const loadMoreCommentsBtn = document.getElementById("load-more-comments-btn");
 
     if (historyDetails && historyList && historyStatus) {
       const repo = historyDetails.dataset.repo || "HermanisV/gurkis.lv";
@@ -1228,6 +1237,85 @@
 
       let loadedCommits = [];
       let activeCommitSha = "";
+      let recipeMatchedIssue = null;
+      let toastTimer = null;
+
+      function showCommentToast(msg, durationMs) {
+        if (!recipeCommentToast) return;
+        recipeCommentToast.textContent = msg;
+        recipeCommentToast.hidden = false;
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          recipeCommentToast.hidden = true;
+        }, durationMs || 5000);
+      }
+
+      function updateActiveCommentVersionBadge(versionNum, shortSha, isLatest) {
+        if (recipeCommentActiveVersion) {
+          recipeCommentActiveVersion.textContent = isLatest
+            ? `v${versionNum} (Jaunākā)`
+            : `v${versionNum} (${shortSha})`;
+        }
+      }
+
+      function handleCommentSubmit() {
+        const commentText = (recipeCommentTextarea && recipeCommentTextarea.value.trim()) || "";
+        const verStr = (recipeCommentActiveVersion && recipeCommentActiveVersion.textContent.trim()) || "Jaunākā";
+
+        if (recipeMatchedIssue && recipeMatchedIssue.html_url) {
+          const targetUrl = `${recipeMatchedIssue.html_url}#new_comment_field`;
+
+          if (commentText) {
+            const formatted = `[Piezīme pie ${verStr}]\n\n${commentText}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard
+                .writeText(formatted)
+                .then(() => {
+                  showCommentToast(
+                    "✓ Piezīmes teksts nokopēts starpliktuvē! Atveras GitHub komentāru lauks — ielīmē (Ctrl+V) un spied 'Comment'.",
+                    6000
+                  );
+                  window.open(targetUrl, "_blank", "noopener");
+                })
+                .catch(() => {
+                  showCommentToast("Atveras GitHub diskusija — ieraksti komentāru atvērtajā logā.", 4000);
+                  window.open(targetUrl, "_blank", "noopener");
+                });
+            } else {
+              showCommentToast("Atveras GitHub diskusija — ieraksti komentāru atvērtajā logā.", 4000);
+              window.open(targetUrl, "_blank", "noopener");
+            }
+          } else {
+            window.open(targetUrl, "_blank", "noopener");
+          }
+        } else {
+          // No issue exists yet -> Create new issue on GitHub with prefilled title & body
+          const params = new URLSearchParams();
+          params.set("labels", "receptes-piezimes");
+          params.set("title", `receptes/${recipeSlug}/`);
+          const initialBody = commentText
+            ? `[Piezīme pie ${verStr}]\n\n${commentText}`
+            : `Piezīme pie receptes [${verStr}]:\n- `;
+          params.set("body", initialBody);
+          const newIssueUrl = `https://github.com/${repo}/issues/new?${params.toString()}`;
+
+          showCommentToast("Atveras jauna ieraksta izveide GitHub — nospied 'Submit new issue'.", 5000);
+          window.open(newIssueUrl, "_blank", "noopener");
+        }
+      }
+
+      if (recipeCommentSubmitBtn) {
+        recipeCommentSubmitBtn.addEventListener("click", handleCommentSubmit);
+      }
+
+      if (recipeCommentTextarea) {
+        recipeCommentTextarea.addEventListener("keydown", (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+            e.preventDefault();
+            handleCommentSubmit();
+          }
+        });
+      }
 
       function escapeHtml(str) {
         return String(str || "")
@@ -1506,6 +1594,7 @@
 
           activeCommitSha = sha;
           updateActiveVersionHighlight();
+          updateActiveCommentVersionBadge(versionNum, shortSha, isLatest);
 
           // Update banner & URL parameter
           const url = new URL(window.location.href);
@@ -1558,6 +1647,7 @@
         if (!activeCommitSha) {
           activeCommitSha = commits[0].sha || "";
         }
+        updateActiveCommentVersionBadge(total, (commits[0].sha || "").slice(0, 7), true);
 
         if (versionBadge) {
           versionBadge.textContent =
@@ -1738,11 +1828,108 @@
         };
       }
 
-      function renderVersionedComments(commentsList, commits) {
-        if (!Array.isArray(commentsList) || commentsList.length === 0) {
-          if (versionedCommentsSection) versionedCommentsSection.hidden = true;
-          return;
+      const COMMENTS_PAGE_SIZE = 5;
+      let allCommentsForRecipe = [];
+      let currentCommentCount = 0;
+
+      function renderNextCommentsPage(commits) {
+        if (!versionedCommentsList) return;
+        const total = allCommentsForRecipe.length;
+        const nextBatch = allCommentsForRecipe.slice(
+          currentCommentCount,
+          currentCommentCount + COMMENTS_PAGE_SIZE
+        );
+
+        nextBatch.forEach((item) => {
+          const verInfo = findVersionForCommentTimestamp(item.created_at, commits);
+          const vNum = verInfo ? verInfo.versionNum : 1;
+          const shortSha =
+            verInfo && verInfo.entry && verInfo.entry.sha
+              ? verInfo.entry.sha.slice(0, 7)
+              : "";
+          const isLatest = verInfo ? verInfo.isLatest : true;
+          const dateFormatted = formatLatvianDate(item.created_at);
+
+          const card = document.createElement("div");
+          card.className = "versioned-comment-card";
+
+          const metaRow = document.createElement("div");
+          metaRow.className = "versioned-comment-meta";
+
+          const verBtn = document.createElement("button");
+          verBtn.type = "button";
+          verBtn.className = "comment-version-badge-btn";
+          verBtn.title = `Atvērt receptes versiju v${vNum} (${shortSha}), pie kuras šī piezīme tika pievienota`;
+          verBtn.textContent = `Pie versijas v${vNum} (${shortSha})`;
+          if (verInfo && verInfo.entry) {
+            verBtn.addEventListener("click", () => {
+              switchToVersion(verInfo.entry, vNum, isLatest, {
+                scrollToTop: true
+              });
+            });
+          }
+
+          const authorSpan = document.createElement("span");
+          authorSpan.className = "versioned-comment-author";
+          authorSpan.textContent = `· @${item.author}`;
+
+          const dateSpan = document.createElement("time");
+          dateSpan.className = "versioned-comment-date";
+          dateSpan.dateTime = item.created_at;
+          dateSpan.textContent = `· ${dateFormatted}`;
+
+          metaRow.appendChild(verBtn);
+          metaRow.appendChild(authorSpan);
+          metaRow.appendChild(dateSpan);
+
+          if (item.url) {
+            const githubLink = document.createElement("a");
+            githubLink.className = "versioned-comment-link";
+            githubLink.href = item.url;
+            githubLink.target = "_blank";
+            githubLink.rel = "noopener noreferrer";
+            githubLink.title = "Skatīt komentāru GitHub";
+            githubLink.textContent = "GitHub ↗";
+            metaRow.appendChild(githubLink);
+          }
+
+          const bodyDiv = document.createElement("div");
+          bodyDiv.className = "versioned-comment-body";
+          bodyDiv.textContent = item.body;
+
+          card.appendChild(metaRow);
+          card.appendChild(bodyDiv);
+          versionedCommentsList.appendChild(card);
+        });
+
+        currentCommentCount += nextBatch.length;
+
+        if (loadMoreCommentsBtn && recipeCommentsPagination) {
+          const remaining = total - currentCommentCount;
+          if (remaining > 0) {
+            recipeCommentsPagination.hidden = false;
+            loadMoreCommentsBtn.hidden = false;
+            const nextLoadCount = Math.min(COMMENTS_PAGE_SIZE, remaining);
+            loadMoreCommentsBtn.textContent =
+              remaining > nextLoadCount
+                ? `Rādīt vēl ${nextLoadCount} piezīmes (atlikušas ${remaining})`
+                : (nextLoadCount === 1 ? "Rādīt vēl 1 piezīmi" : `Rādīt vēl ${nextLoadCount} piezīmes`);
+          } else {
+            recipeCommentsPagination.hidden = true;
+            loadMoreCommentsBtn.hidden = true;
+          }
         }
+      }
+
+      if (loadMoreCommentsBtn) {
+        loadMoreCommentsBtn.addEventListener("click", () => {
+          renderNextCommentsPage(loadedCommits);
+        });
+      }
+
+      function renderVersionedComments(commentsList, commits) {
+        allCommentsForRecipe = [];
+        currentCommentCount = 0;
 
         if (versionedCommentsList) {
           versionedCommentsList.innerHTML = "";
@@ -1754,7 +1941,41 @@
           el.hidden = true;
         });
 
-        commentsList.forEach((item) => {
+        if (versionedCommentsSection) {
+          versionedCommentsSection.hidden = false;
+        }
+
+        if (!Array.isArray(commentsList) || commentsList.length === 0) {
+          if (recipeCommentsEmpty) recipeCommentsEmpty.hidden = false;
+          if (recipeCommentsCountBadge) recipeCommentsCountBadge.hidden = true;
+          if (recipeCommentsPagination) recipeCommentsPagination.hidden = true;
+          return;
+        }
+
+        if (recipeCommentsEmpty) {
+          recipeCommentsEmpty.hidden = true;
+        }
+
+        // Sort comments newest-first
+        const sorted = commentsList.slice().sort((a, b) => {
+          const timeA = new Date(a.created_at).getTime() || 0;
+          const timeB = new Date(b.created_at).getTime() || 0;
+          return timeB - timeA;
+        });
+
+        allCommentsForRecipe = sorted;
+
+        if (recipeCommentsCountBadge) {
+          const total = sorted.length;
+          const isSingular = total % 10 === 1 && total % 100 !== 11;
+          recipeCommentsCountBadge.textContent = isSingular
+            ? `${total} piezīme`
+            : `${total} piezīmes`;
+          recipeCommentsCountBadge.hidden = false;
+        }
+
+        // 1. Attach ALL comments to their respective commit in Versiju vēsture timeline
+        sorted.forEach((item) => {
           const verInfo = findVersionForCommentTimestamp(item.created_at, commits);
           if (!verInfo || !verInfo.entry) return;
 
@@ -1763,48 +1984,6 @@
           const vNum = verInfo.versionNum;
           const dateFormatted = formatLatvianDate(item.created_at);
 
-          // 1. Render card above Utterances comment widget
-          if (versionedCommentsList) {
-            const card = document.createElement("div");
-            card.className = "versioned-comment-card";
-
-            const metaRow = document.createElement("div");
-            metaRow.className = "versioned-comment-meta";
-
-            const verBtn = document.createElement("button");
-            verBtn.type = "button";
-            verBtn.className = "comment-version-badge-btn";
-            verBtn.title = `Atvērt receptes versiju v${vNum} (${shortSha}), pie kuras šī piezīme tika pievienota`;
-            verBtn.textContent = `Pie versijas v${vNum} (${shortSha})`;
-            verBtn.addEventListener("click", () => {
-              switchToVersion(verInfo.entry, vNum, verInfo.isLatest, {
-                scrollToTop: true
-              });
-            });
-
-            const authorSpan = document.createElement("span");
-            authorSpan.className = "versioned-comment-author";
-            authorSpan.textContent = `· ${item.author}`;
-
-            const dateSpan = document.createElement("time");
-            dateSpan.className = "versioned-comment-date";
-            dateSpan.dateTime = item.created_at;
-            dateSpan.textContent = `· ${dateFormatted}`;
-
-            metaRow.appendChild(verBtn);
-            metaRow.appendChild(authorSpan);
-            metaRow.appendChild(dateSpan);
-
-            const bodyDiv = document.createElement("div");
-            bodyDiv.className = "versioned-comment-body";
-            bodyDiv.textContent = item.body;
-
-            card.appendChild(metaRow);
-            card.appendChild(bodyDiv);
-            versionedCommentsList.appendChild(card);
-          }
-
-          // 2. Also attach a compact badge note inside the corresponding commit in Versiju vēsture
           const historyCommentsBox = historyList.querySelector(
             `.history-item-comments[data-version-sha="${sha}"]`
           );
@@ -1813,7 +1992,7 @@
             noteRow.className = "history-attached-comment";
             noteRow.innerHTML = `<span class="history-comment-tag">💬 Piezīme pie v${vNum} (${escapeHtml(
               shortSha
-            )})</span> <span class="history-comment-meta">· ${escapeHtml(
+            )})</span> <span class="history-comment-meta">· @${escapeHtml(
               item.author
             )} · ${escapeHtml(
               dateFormatted
@@ -1825,10 +2004,8 @@
           }
         });
 
-        if (versionedCommentsSection && versionedCommentsList) {
-          versionedCommentsSection.hidden =
-            versionedCommentsList.children.length === 0;
-        }
+        // 2. Render initial batch of 5 comments in comment log section
+        renderNextCommentsPage(commits);
       }
 
       async function loadRecipeComments(commits) {
@@ -1839,6 +2016,15 @@
           if (cachedRaw) {
             const cached = JSON.parse(cachedRaw);
             if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+              recipeMatchedIssue = cached.matchedIssue || null;
+              if (recipeViewIssueLink) {
+                if (recipeMatchedIssue && recipeMatchedIssue.html_url) {
+                  recipeViewIssueLink.href = recipeMatchedIssue.html_url;
+                  recipeViewIssueLink.hidden = false;
+                } else {
+                  recipeViewIssueLink.hidden = true;
+                }
+              }
               renderVersionedComments(cached.data, commits);
               return;
             }
@@ -1867,6 +2053,22 @@
               b.includes(`receptes/${recipeSlug}`)
             );
           });
+
+          if (matchingIssues.length > 0) {
+            recipeMatchedIssue = {
+              number: matchingIssues[0].number,
+              html_url: matchingIssues[0].html_url
+            };
+            if (recipeViewIssueLink) {
+              recipeViewIssueLink.href = recipeMatchedIssue.html_url;
+              recipeViewIssueLink.hidden = false;
+            }
+          } else {
+            recipeMatchedIssue = null;
+            if (recipeViewIssueLink) {
+              recipeViewIssueLink.hidden = true;
+            }
+          }
 
           const collected = [];
           for (let i = 0; i < matchingIssues.length; i++) {
@@ -1910,7 +2112,11 @@
           try {
             sessionStorage.setItem(
               commentsCacheKey,
-              JSON.stringify({ timestamp: Date.now(), data: collected })
+              JSON.stringify({
+                timestamp: Date.now(),
+                data: collected,
+                matchedIssue: recipeMatchedIssue
+              })
             );
           } catch (_e) {
             // Ignore quota errors
@@ -1918,7 +2124,7 @@
 
           renderVersionedComments(collected, commits);
         } catch (_err) {
-          // Silently ignore if rate-limited; Utterances widget still renders below
+          // Silently ignore if rate-limited
         }
       }
 
