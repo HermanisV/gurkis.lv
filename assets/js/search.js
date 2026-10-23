@@ -204,6 +204,97 @@
 
     bindInteractiveRecipeElements();
 
+    // Screen Wake Lock Toggle ("Turēt ekrānu ieslēgtu")
+    const wakeLockContainer = document.getElementById("wake-lock-container");
+    const wakeLockBtn = document.getElementById("wake-lock-toggle");
+
+    if (wakeLockContainer && wakeLockBtn) {
+      if (!("wakeLock" in navigator)) {
+        wakeLockContainer.hidden = true;
+      } else {
+        let wakeLockSentinel = null;
+        let wakeLockDesired = true;
+        try {
+          if (localStorage.getItem("gurkis_wake_lock") === "0") {
+            wakeLockDesired = false;
+          }
+        } catch (_e) {
+          // Ignore localStorage errors
+        }
+
+        function updateWakeLockUI(isActive) {
+          wakeLockBtn.classList.toggle("active", Boolean(isActive));
+          wakeLockBtn.setAttribute("aria-checked", isActive ? "true" : "false");
+        }
+
+        async function acquireWakeLock() {
+          if (!wakeLockDesired || document.visibilityState !== "visible") return;
+          if (wakeLockSentinel && !wakeLockSentinel.released) {
+            updateWakeLockUI(true);
+            return;
+          }
+          try {
+            wakeLockSentinel = await navigator.wakeLock.request("screen");
+            updateWakeLockUI(true);
+            wakeLockSentinel.addEventListener("release", () => {
+              if (!wakeLockDesired) {
+                updateWakeLockUI(false);
+              }
+            });
+          } catch (_err) {
+            updateWakeLockUI(false);
+          }
+        }
+
+        async function releaseWakeLock() {
+          if (wakeLockSentinel) {
+            try {
+              await wakeLockSentinel.release();
+            } catch (_err) {
+              // Ignore release errors
+            }
+            wakeLockSentinel = null;
+          }
+          updateWakeLockUI(false);
+        }
+
+        wakeLockBtn.addEventListener("click", () => {
+          const isCurrentlyActive = wakeLockBtn.classList.contains("active");
+          wakeLockDesired = !isCurrentlyActive;
+          try {
+            localStorage.setItem("gurkis_wake_lock", wakeLockDesired ? "1" : "0");
+          } catch (_e) {
+            // Ignore localStorage errors
+          }
+
+          if (wakeLockDesired) {
+            acquireWakeLock();
+          } else {
+            releaseWakeLock();
+          }
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible" && wakeLockDesired) {
+            acquireWakeLock();
+          }
+        });
+
+        // Attempt to acquire immediately if enabled by default, and retry on first tap if browser requires gesture
+        if (wakeLockDesired) {
+          acquireWakeLock();
+          const onFirstInteraction = (e) => {
+            if (wakeLockBtn.contains(e.target)) return;
+            if (wakeLockDesired && (!wakeLockSentinel || wakeLockSentinel.released)) {
+              acquireWakeLock();
+            }
+          };
+          document.addEventListener("click", onFirstInteraction, { once: true, passive: true });
+          document.addEventListener("touchstart", onFirstInteraction, { once: true, passive: true });
+        }
+      }
+    }
+
     function formatScaledNumber(num) {
       const rounded = Math.round(num * 10) / 10;
       return rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(1);

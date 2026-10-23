@@ -363,6 +363,7 @@ body {
 .recipe-meta-bar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 1.5rem;
   padding-top: 1rem;
   border-top: 1px solid var(--border-color);
@@ -371,6 +372,75 @@ body {
 .meta-item {
   display: flex;
   flex-direction: column;
+}
+
+.meta-item-wakelock {
+  margin-left: auto;
+}
+
+@media (max-width: 600px) {
+  .meta-item-wakelock {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+.wake-lock-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.85rem 0.4rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.wake-lock-btn:hover {
+  border-color: var(--brand-primary);
+}
+
+.wake-lock-btn.active {
+  background-color: var(--bg-accent-subtle);
+  border-color: var(--brand-primary);
+  color: var(--badge-text);
+}
+
+.wake-lock-switch {
+  width: 32px;
+  height: 18px;
+  border-radius: 999px;
+  background-color: #cbd5ce;
+  position: relative;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease;
+}
+
+.wake-lock-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.wake-lock-btn.active .wake-lock-switch {
+  background-color: var(--brand-primary);
+}
+
+.wake-lock-btn.active .wake-lock-switch::after {
+  transform: translateX(14px);
 }
 
 .meta-label {
