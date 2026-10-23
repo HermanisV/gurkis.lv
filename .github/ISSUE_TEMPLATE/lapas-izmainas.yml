@@ -1,14 +1,13 @@
-name: "✨ Lapas vai receptes izmaiņas"
-description: "Ierosini uzlabojumu esošai receptei vai jaunu funkciju Gurķis LV lapai"
-title: "[Pieprasījums] "
-labels: ["pieprasijums"]
+name: "✨ Lapas uzlabojums"
+description: "Ierosini jaunu funkciju, dizaina uzlabojumu vai izmaiņas Gurķis LV lapai"
+title: "[Lapas uzlabojums] "
+labels: ["pieprasijums", "lapas-uzlabojums"]
 body:
   - type: dropdown
     id: request_type
     attributes:
       label: "Pieprasījuma veids"
       options:
-        - "Izmaiņas esošā receptē"
         - "Jauna lapas funkcija vai dizaina uzlabojums"
         - "Kļūdas labojums"
     validations:

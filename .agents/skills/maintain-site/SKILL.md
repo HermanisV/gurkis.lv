@@ -35,7 +35,7 @@ The repository is built natively by GitHub Pages using Jekyll:
    - **Persistent Comments & Improvement Notes (`.recipe-comments-panel`)**: Embeds **Utterances** (GitHub Issues) or **Giscus** (GitHub Discussions) configured via `site.comments` in `_config.yml`.
 5. **Page Requests & New Recipe Submissions (`pievienot.html` / `/pievienot/`)**:
    - Accessible from the header navigation button **Pievienot ko jaunu** next to **Visas receptes**.
-   - Provides an interactive request builder (`#page-requests-root` in `assets/js/search.js`) that opens a pre-filled GitHub Issue (`pieprasijums` label) for new recipes, recipe edits, or site features, a live board of open/closed requests fetched from GitHub Issues API, and an embedded Utterances quick-comment thread.
+   - Provides an interactive request builder (`#page-requests-root` in `assets/js/search.js`) that opens a pre-filled GitHub Issue (`pieprasijums` label) for new recipes or site features, and a live board of open/closed requests fetched from GitHub Issues API.
 
 ## 3. Git Branching & Deployment Workflow
 

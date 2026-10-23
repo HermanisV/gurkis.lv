@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
     Fetches user requests submitted via the "Pievienot ko jaunu" (/pievienot/) page on Gurķis LV
-    (both GitHub Issues and Utterances comments on /pievienot/).
+    (GitHub Issues).
 
 .PARAMETER Repo
     GitHub repository in "owner/repo" format. Defaults to "HermanisV/gurkis.lv".
@@ -46,9 +46,6 @@ function Get-RequestType {
     if ($labelNames -contains "jauna-recepte" -or $title -match '(?i)\[jauna recepte\]') {
         return "new-recipe"
     }
-    if ($labelNames -contains "receptes-izmainas" -or $title -match '(?i)\[izmaiņas receptē\]') {
-        return "recipe-update"
-    }
     if ($labelNames -contains "lapas-uzlabojums" -or $title -match '(?i)\[lapas uzlabojums\]') {
         return "site-change"
     }
@@ -79,10 +76,9 @@ foreach ($iss in $rawIssues) {
 
     $author = [string]$iss.user.login
     $title = [string]$iss.title
-    $isRecipeUtterances = (($author -eq "utterances-bot" -or $title -match '^receptes/') -and ($title -notmatch 'pievienot'))
-    $isPievienotUtterances = (($author -eq "utterances-bot" -or $title -match '^pievienot') -and ($title -match 'pievienot'))
+    $isUtterances = ($author -eq "utterances-bot" -or $title -match '^receptes/')
 
-    if ($isRecipeUtterances -and $IssueNumber -eq 0) {
+    if ($isUtterances -and $IssueNumber -eq 0) {
         continue
     }
 
@@ -102,24 +98,6 @@ foreach ($iss in $rawIssues) {
         } catch {
             Write-Warning "Could not fetch comments for Issue #$($iss.number): $_"
         }
-    }
-
-    if ($isPievienotUtterances) {
-        if ($commentsText.Count -gt 0) {
-            $requests += [PSCustomObject]@{
-                IssueNumber = $iss.number
-                State       = $iss.state
-                RequestType = "utterances-thread (/pievienot/)"
-                Title       = $title
-                Author      = $author
-                CreatedAt   = ([datetimeoffset]::Parse($iss.created_at)).ToString("yyyy-MM-dd HH:mm:ss zzz")
-                UpdatedAt   = ([datetimeoffset]::Parse($iss.updated_at)).ToString("yyyy-MM-dd HH:mm:ss zzz")
-                Url         = $iss.html_url
-                Body        = "(Utterances thread on /pievienot/ - see comments below)"
-                Comments    = $commentsText
-            }
-        }
-        continue
     }
 
     $requests += [PSCustomObject]@{
