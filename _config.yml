@@ -2,6 +2,8 @@ title: "Gurķis LV"
 subtitle: "Personīgais recepšu katalogs — precīzi svari gramos un pārbaudītas garšas"
 description: "Manas iecienītākās ēdienu gatavošanas receptes latviešu valodā ar precīziem mērījumiem gramos un mililitros."
 lang: "lv"
+url: "https://gurkis.lv"
+baseurl: ""
 
 github_repo: "HermanisV/gurkis.lv"
 github_branch: "main"
