@@ -76,6 +76,24 @@ if ($totalVersions -gt 0) {
     $latestCommitDate = [datetimeoffset]::Parse($latest.commit.author.date)
 }
 
+function Get-CommentVersionLabel {
+    param([datetimeoffset]$CommentDate, [array]$CommitsList)
+    if ($null -eq $CommitsList -or $CommitsList.Count -eq 0) {
+        return "v1"
+    }
+    $total = $CommitsList.Count
+    for ($i = 0; $i -lt $total; $i++) {
+        $cDate = [datetimeoffset]::Parse($CommitsList[$i].commit.author.date)
+        if ($cDate -le $CommentDate) {
+            $vNum = $total - $i
+            $shortSha = $CommitsList[$i].sha.Substring(0, 7)
+            return "v$vNum ($shortSha)"
+        }
+    }
+    $oldestSha = $CommitsList[$total - 1].sha.Substring(0, 7)
+    return "v1 ($oldestSha)"
+}
+
 # 2. Fetch Issues matching this recipe slug (Utterances threads + manual Improvement Issues)
 $issuesUrl = "https://api.github.com/repos/$Repo/issues?state=all&per_page=100"
 $allIssues = Invoke-GitHubApiArray -Uri $issuesUrl -Headers $headers
@@ -102,6 +120,7 @@ foreach ($issue in $matchingIssues) {
         $issueUpdated = [datetimeoffset]::Parse($issue.updated_at)
         $effectiveDate = if ($issueUpdated -gt $issueCreated) { $issueUpdated } else { $issueCreated }
         $isNewest = ($effectiveDate -ge $latestCommitDate)
+        $writtenOnVer = Get-CommentVersionLabel -CommentDate $issueCreated -CommitsList $commits
 
         if (-not $OnlyNewestVersion -or $isNewest) {
             $collectedComments += [PSCustomObject]@{
@@ -111,6 +130,7 @@ foreach ($issue in $matchingIssues) {
                 Author             = $issueAuthor
                 CreatedAt          = $issueCreated.ToString("yyyy-MM-dd HH:mm:ss zzz")
                 UpdatedAt          = $issueUpdated.ToString("yyyy-MM-dd HH:mm:ss zzz")
+                WrittenOnVersion   = $writtenOnVer
                 IsForNewestVersion = $isNewest
                 Url                = $issue.html_url
                 Text               = ($issue.body -replace '\r\n', "`n").Trim()
@@ -126,6 +146,7 @@ foreach ($issue in $matchingIssues) {
             $cUpdated = [datetimeoffset]::Parse($c.updated_at)
             $effectiveDate = if ($cUpdated -gt $cCreated) { $cUpdated } else { $cCreated }
             $isNewest = ($effectiveDate -ge $latestCommitDate)
+            $writtenOnVer = Get-CommentVersionLabel -CommentDate $cCreated -CommitsList $commits
 
             if (-not $OnlyNewestVersion -or $isNewest) {
                 $collectedComments += [PSCustomObject]@{
@@ -135,6 +156,7 @@ foreach ($issue in $matchingIssues) {
                     Author             = [string]$c.user.login
                     CreatedAt          = $cCreated.ToString("yyyy-MM-dd HH:mm:ss zzz")
                     UpdatedAt          = $cUpdated.ToString("yyyy-MM-dd HH:mm:ss zzz")
+                    WrittenOnVersion   = $writtenOnVer
                     IsForNewestVersion = $isNewest
                     Url                = $c.html_url
                     Text               = ($c.body -replace '\r\n', "`n").Trim()
@@ -166,7 +188,7 @@ if ($collectedComments.Count -eq 0) {
 $idx = 1
 foreach ($item in $collectedComments) {
     $badge = if ($item.IsForNewestVersion) { "[NEWEST VERSION]" } else { "[OLDER VERSION]" }
-    Write-Host "[$idx] $badge $($item.SourceType) by @$($item.Author) on $($item.UpdatedAt)"
+    Write-Host "[$idx] $badge [Pie versijas $($item.WrittenOnVersion)] $($item.SourceType) by @$($item.Author) on $($item.UpdatedAt)"
     Write-Host "    URL : $($item.Url)"
     Write-Host "    Text: $($item.Text)"
     Write-Host ""

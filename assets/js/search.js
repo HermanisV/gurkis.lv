@@ -630,12 +630,19 @@
     const versionBanner = document.getElementById("recipe-version-banner");
     const versionBannerLabel = document.getElementById("recipe-version-banner-label");
     const versionRestoreBtn = document.getElementById("recipe-version-restore-btn");
+    const versionedCommentsSection = document.getElementById("recipe-versioned-comments");
+    const versionedCommentsList = document.getElementById("recipe-versioned-comments-list");
+    const newIssueBtn = document.getElementById("new-improvement-issue-btn");
 
     if (historyDetails && historyList && historyStatus) {
       const repo = historyDetails.dataset.repo || "HermanisV/gurkis.lv";
       const branch = historyDetails.dataset.branch || "main";
       const recipePath = historyDetails.dataset.recipePath || "";
+      const recipeSlug = recipePath
+        .replace(/^_recipes[/\\]/, "")
+        .replace(/\.md$/, "");
       const cacheKey = `gurkis_commits_v2_${repo}_${branch}_${recipePath}`;
+      const commentsCacheKey = `gurkis_comments_v1_${repo}_${recipeSlug}`;
       const CACHE_TTL_MS = 60 * 1000; // 1 minute cache to stay fresh after merges
 
       let loadedCommits = [];
@@ -919,6 +926,22 @@
           activeCommitSha = sha;
           updateActiveVersionHighlight();
 
+          // Update "+ Jauns uzlabojums" issue link to include currently viewed version
+          if (newIssueBtn) {
+            try {
+              const issueUrl = new URL(newIssueBtn.href);
+              const pageTitle = (titleEl && titleEl.textContent) || recipeSlug;
+              issueUrl.searchParams.set("title", `Uzlabojums: ${pageTitle} (v${versionNum})`);
+              issueUrl.searchParams.set(
+                "body",
+                `Recepte: ${window.location.origin}${window.location.pathname}\nVersija: v${versionNum} (${shortSha})\n\nKo uzlabot nākamreiz:\n- `
+              );
+              newIssueBtn.href = issueUrl.toString();
+            } catch (_e) {
+              // Ignore URL parse error
+            }
+          }
+
           // Update banner & URL parameter
           const url = new URL(window.location.href);
           if (isLatest) {
@@ -1073,12 +1096,21 @@
             li.appendChild(bodyEl);
           }
 
+          const notesContainer = document.createElement("div");
+          notesContainer.className = "history-item-comments";
+          notesContainer.dataset.versionSha = sha;
+          notesContainer.hidden = true;
+          li.appendChild(notesContainer);
+
           historyList.appendChild(li);
         });
 
         updateActiveVersionHighlight();
         historyStatus.hidden = true;
         historyList.hidden = false;
+
+        // Fetch and attach version-tagged comments for this recipe
+        loadRecipeComments(commits);
 
         // Check if URL requests a specific historical version (?versija=<sha>),
         // otherwise ensure the newest commit (commits[0]) is loaded so browser/CDN cache never shows stale recipe text
@@ -1102,6 +1134,227 @@
 
         // Always ensure newest version from commits[0] is synced onto the page by default
         switchToVersion(commits[0], total, true, { scrollToTop: false });
+      }
+
+      function findVersionForCommentTimestamp(commentIsoDate, commits) {
+        if (!Array.isArray(commits) || commits.length === 0) return null;
+        const commentTime = new Date(commentIsoDate).getTime();
+        if (isNaN(commentTime)) {
+          return {
+            entry: commits[0],
+            versionNum: commits.length,
+            isLatest: true
+          };
+        }
+
+        // Commits are ordered newest-first (index 0 = newest vN, index length-1 = oldest v1).
+        // The version active when the comment was written is the newest commit with commitDate <= commentTime.
+        for (let i = 0; i < commits.length; i++) {
+          const cDateStr =
+            commits[i].commit &&
+            commits[i].commit.author &&
+            commits[i].commit.author.date;
+          const cTime = cDateStr ? new Date(cDateStr).getTime() : 0;
+          if (cTime <= commentTime) {
+            return {
+              entry: commits[i],
+              versionNum: commits.length - i,
+              isLatest: i === 0
+            };
+          }
+        }
+
+        // If comment timestamp is older than the earliest commit, map to v1
+        const oldestIdx = commits.length - 1;
+        return {
+          entry: commits[oldestIdx],
+          versionNum: 1,
+          isLatest: oldestIdx === 0
+        };
+      }
+
+      function renderVersionedComments(commentsList, commits) {
+        if (!Array.isArray(commentsList) || commentsList.length === 0) {
+          if (versionedCommentsSection) versionedCommentsSection.hidden = true;
+          return;
+        }
+
+        if (versionedCommentsList) {
+          versionedCommentsList.innerHTML = "";
+        }
+
+        // Clear any previously rendered per-version comment containers in history timeline
+        historyList.querySelectorAll(".history-item-comments").forEach((el) => {
+          el.innerHTML = "";
+          el.hidden = true;
+        });
+
+        commentsList.forEach((item) => {
+          const verInfo = findVersionForCommentTimestamp(item.created_at, commits);
+          if (!verInfo || !verInfo.entry) return;
+
+          const sha = verInfo.entry.sha || "";
+          const shortSha = sha.slice(0, 7);
+          const vNum = verInfo.versionNum;
+          const dateFormatted = formatLatvianDate(item.created_at);
+
+          // 1. Render card above Utterances comment widget
+          if (versionedCommentsList) {
+            const card = document.createElement("div");
+            card.className = "versioned-comment-card";
+
+            const metaRow = document.createElement("div");
+            metaRow.className = "versioned-comment-meta";
+
+            const verBtn = document.createElement("button");
+            verBtn.type = "button";
+            verBtn.className = "comment-version-badge-btn";
+            verBtn.title = `Atvērt receptes versiju v${vNum} (${shortSha}), pie kuras šī piezīme tika pievienota`;
+            verBtn.textContent = `Pie versijas v${vNum} (${shortSha})`;
+            verBtn.addEventListener("click", () => {
+              switchToVersion(verInfo.entry, vNum, verInfo.isLatest, {
+                scrollToTop: true
+              });
+            });
+
+            const authorSpan = document.createElement("span");
+            authorSpan.className = "versioned-comment-author";
+            authorSpan.textContent = `· ${item.author}`;
+
+            const dateSpan = document.createElement("time");
+            dateSpan.className = "versioned-comment-date";
+            dateSpan.dateTime = item.created_at;
+            dateSpan.textContent = `· ${dateFormatted}`;
+
+            metaRow.appendChild(verBtn);
+            metaRow.appendChild(authorSpan);
+            metaRow.appendChild(dateSpan);
+
+            const bodyDiv = document.createElement("div");
+            bodyDiv.className = "versioned-comment-body";
+            bodyDiv.textContent = item.body;
+
+            card.appendChild(metaRow);
+            card.appendChild(bodyDiv);
+            versionedCommentsList.appendChild(card);
+          }
+
+          // 2. Also attach a compact badge note inside the corresponding commit in Versiju vēsture
+          const historyCommentsBox = historyList.querySelector(
+            `.history-item-comments[data-version-sha="${sha}"]`
+          );
+          if (historyCommentsBox) {
+            const noteRow = document.createElement("div");
+            noteRow.className = "history-attached-comment";
+            noteRow.innerHTML = `<span class="history-comment-tag">💬 Piezīme pie v${vNum} (${escapeHtml(
+              shortSha
+            )})</span> <span class="history-comment-meta">· ${escapeHtml(
+              item.author
+            )} · ${escapeHtml(
+              dateFormatted
+            )}:</span> <span class="history-comment-text">${escapeHtml(
+              item.body
+            )}</span>`;
+            historyCommentsBox.appendChild(noteRow);
+            historyCommentsBox.hidden = false;
+          }
+        });
+
+        if (versionedCommentsSection && versionedCommentsList) {
+          versionedCommentsSection.hidden =
+            versionedCommentsList.children.length === 0;
+        }
+      }
+
+      async function loadRecipeComments(commits) {
+        if (!recipeSlug) return;
+
+        try {
+          const cachedRaw = sessionStorage.getItem(commentsCacheKey);
+          if (cachedRaw) {
+            const cached = JSON.parse(cachedRaw);
+            if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+              renderVersionedComments(cached.data, commits);
+              return;
+            }
+          }
+        } catch (_e) {
+          // Ignore sessionStorage errors
+        }
+
+        try {
+          const issuesUrl = `https://api.github.com/repos/${repo}/issues?state=all&per_page=100`;
+          const resp = await fetch(issuesUrl, {
+            headers: { Accept: "application/vnd.github+json" }
+          });
+          if (!resp.ok) return;
+
+          const allIssues = await resp.json();
+          if (!Array.isArray(allIssues)) return;
+
+          const matchingIssues = allIssues.filter((issue) => {
+            if (issue.pull_request) return false;
+            const t = String(issue.title || "");
+            const b = String(issue.body || "");
+            return (
+              t.includes(recipeSlug) ||
+              b.includes(`receptes/${recipeSlug}/`) ||
+              b.includes(`receptes/${recipeSlug}`)
+            );
+          });
+
+          const collected = [];
+          for (let i = 0; i < matchingIssues.length; i++) {
+            const issue = matchingIssues[i];
+            const issueAuthor = (issue.user && issue.user.login) || "Autors";
+            const isUtterancesThread =
+              issueAuthor === "utterances-bot" ||
+              String(issue.title || "").includes(`receptes/${recipeSlug}`);
+
+            if (!isUtterancesThread && issue.body) {
+              collected.push({
+                author: issueAuthor,
+                created_at: issue.created_at,
+                body: String(issue.body).trim(),
+                url: issue.html_url
+              });
+            }
+
+            if (issue.comments > 0 && issue.comments_url) {
+              const cResp = await fetch(issue.comments_url, {
+                headers: { Accept: "application/vnd.github+json" }
+              });
+              if (cResp.ok) {
+                const cList = await cResp.json();
+                if (Array.isArray(cList)) {
+                  cList.forEach((c) => {
+                    if (c && c.body) {
+                      collected.push({
+                        author: (c.user && c.user.login) || "Autors",
+                        created_at: c.created_at,
+                        body: String(c.body).trim(),
+                        url: c.html_url
+                      });
+                    }
+                  });
+                }
+              }
+            }
+          }
+
+          try {
+            sessionStorage.setItem(
+              commentsCacheKey,
+              JSON.stringify({ timestamp: Date.now(), data: collected })
+            );
+          } catch (_e) {
+            // Ignore quota errors
+          }
+
+          renderVersionedComments(collected, commits);
+        } catch (_err) {
+          // Silently ignore if rate-limited; Utterances widget still renders below
+        }
       }
 
       async function loadCommitHistory() {

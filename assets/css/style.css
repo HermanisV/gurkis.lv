@@ -1027,6 +1027,109 @@ body {
   white-space: pre-wrap;
 }
 
+.history-item-comments {
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.history-attached-comment {
+  font-size: 0.84rem;
+  color: var(--text-main);
+  background-color: var(--bg-card);
+  border-left: 3px solid var(--brand-primary);
+  padding: 0.4rem 0.65rem;
+  border-radius: 4px;
+}
+
+.history-comment-tag {
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+.history-comment-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.history-comment-text {
+  font-weight: 500;
+}
+
+.versioned-comments-section {
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.versioned-comments-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin-bottom: 0.65rem;
+}
+
+.versioned-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.versioned-comment-card {
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.95rem;
+}
+
+.versioned-comment-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.82rem;
+}
+
+.comment-version-badge-btn {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--badge-text);
+  background-color: var(--badge-bg);
+  border: 1px solid #b8d4be;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.comment-version-badge-btn:hover {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #fff;
+}
+
+.versioned-comment-author {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.versioned-comment-date {
+  color: var(--text-muted);
+}
+
+.versioned-comment-body {
+  font-size: 0.94rem;
+  color: var(--text-main);
+  white-space: pre-wrap;
+}
+
 .comments-header {
   display: flex;
   flex-wrap: wrap;
