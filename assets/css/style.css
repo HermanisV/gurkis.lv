@@ -1195,6 +1195,25 @@ body {
   border-radius: 4px;
 }
 
+.history-attached-comment.is-resolved {
+  border-left-color: #2e7d32;
+  background-color: #f2faf3;
+}
+
+.history-attached-comment.is-rejected {
+  border-left-color: #d32f2f;
+  background-color: #fdf5f4;
+}
+
+.history-attached-comment.is-rejected .history-comment-text {
+  color: var(--text-muted);
+}
+
+.history-attached-comment.is-open {
+  border-left-color: #d97706;
+  background-color: #fefcf3;
+}
+
 .history-comment-tag {
   font-weight: 700;
   color: var(--brand-primary);
@@ -1309,6 +1328,69 @@ body {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.95rem;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.versioned-comment-card.comment-is-resolved {
+  border-left: 3.5px solid #2e7d32;
+  background-color: #fafdfa;
+}
+
+.versioned-comment-card.comment-is-rejected {
+  border-left: 3.5px solid #d32f2f;
+  background-color: #fdf9f8;
+}
+
+.versioned-comment-card.comment-is-rejected .versioned-comment-body {
+  color: var(--text-muted);
+}
+
+.versioned-comment-card.comment-is-open {
+  border-left: 3.5px solid #d97706;
+  background-color: #fefdf8;
+}
+
+/* Resolution status badges */
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.15rem 0.52rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+}
+
+.badge-status-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 0.08rem 0.42rem;
+  border-radius: 999px;
+  vertical-align: middle;
+}
+
+.badge-status-resolved {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  border: 1px solid #a5d6a7;
+}
+
+.badge-status-rejected {
+  background-color: #ffebee;
+  color: #b71c1c;
+  border: 1px solid #ffcdd2;
+}
+
+.badge-status-open {
+  background-color: #fff8e1;
+  color: #8d5300;
+  border: 1px solid #ffe082;
 }
 
 .versioned-comment-meta {
