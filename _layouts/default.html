@@ -20,6 +20,7 @@
       </a>
       <nav class="site-nav">
         <a href="{{ '/' | relative_url }}" class="nav-link {% if page.url == '/' %}active{% endif %}">Visas receptes ({{ site.recipes | size }})</a>
+        <a href="{{ '/pievienot/' | relative_url }}" class="nav-link nav-link-add {% if page.url contains '/pievienot' %}active{% endif %}">Pievienot ko jaunu</a>
       </nav>
     </div>
   </header>

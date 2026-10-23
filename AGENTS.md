@@ -81,6 +81,7 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
   - Filenames (`<slug>.md`) must use lowercase ASCII letters, numbers, and hyphens only (transliterate Latvian diacritics: `ā→a`, `č→c`, `ē→e`, `ģ→g`, `ī→i`, `ķ→k`, `ļ→l`, `ņ→n`, `š→s`, `ū→u`, `ž→z`).
 - `_layouts/`: HTML/Liquid layouts (`default.html`, `recipe.html`).
 - `index.html`: Homepage with category filtering and live search.
+- `pievienot.html`: Dedicated page (`/pievienot/`, linked via the header button **"Pievienot ko jaunu"**) where users with a GitHub account can submit, view, and edit requests for new recipes, recipe modifications, or site features via GitHub Issues and Utterances comments.
 - `search.json`: Liquid-generated JSON index for client-side search.
 - `assets/css/style.css` & `assets/js/search.js`: Styling and interactive scripts (search, portion scaling, ingredient checklists).
 
@@ -115,5 +116,6 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
 - **Orchestrating Comment-Driven Recipe Updates**: When the user asks to update a recipe based on comments left on its page (e.g., *"update `<slug>` recipe to new version following all the recommendations I've left in the comments of the newest version"*), **orchestrate both skills in sequence**:
   1. Execute `gather-recipe-comments` first to fetch comments created since the newest commit version of `_recipes/<slug>.md` and synthesize actionable culinary requirements.
   2. Pass those requirements into `update-recipe` to update both the frontmatter `ingredients:` list and bolded inline instruction amounts (`**...**`), validate, and push a `fix/<slug>` branch with a descriptive Latvian commit message for the version history timeline.
+- **Processing Page Requests (`process-requests`)**: Read and follow [.agents/skills/process-requests/SKILL.md](.agents/skills/process-requests/SKILL.md) (which uses `get-page-requests.ps1` and `close-page-request.ps1`) when the user asks to check, implement, and close requests submitted via the **"Pievienot ko jaunu"** (`/pievienot/`) page.
 - **Maintaining the Site & Layouts (`maintain-site`)**: Read and follow [.agents/skills/maintain-site/SKILL.md](.agents/skills/maintain-site/SKILL.md) when modifying layouts, styles, search logic, or Jekyll configuration.
 

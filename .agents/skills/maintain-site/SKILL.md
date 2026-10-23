@@ -32,7 +32,10 @@ The repository is built natively by GitHub Pages using Jekyll:
    - **Screen Wake Lock Toggle (`#wake-lock-toggle`)**: Uses `navigator.wakeLock.request('screen')` (enabled by default and persisted in `localStorage`) with a toggle switch ("Turēt ekrānu ieslēgtu") in `.recipe-meta-bar` so the screen does not dim or lock while cooking. Automatically re-acquires the lock on `visibilitychange`.
    - **Latvian Diacritic Normalization**: Search normalizes Latvian characters (`ā→a`, `č→c`, `ē→e`, `ģ→g`, `ī→i`, `ķ→k`, `ļ→l`, `ņ→n`, `š→s`, `ū→u`, `ž→z`) via `String.prototype.normalize('NFD').replace(/[\u0300-\u036f]/g, '')` so users can search with or without diacritics.
    - **Live Git Commit Version History & In-Page Version Switcher (`#recipe-history-details`)**: Fetches commit history for the current `page.path` (`_recipes/<slug>.md`) from the GitHub REST API (`https://api.github.com/repos/<github_repo>/commits?path=...`). By default, ensures the newest commit (`commits[0]`) is displayed. Clicking any commit ID button (`Atvērt <sha>`) fetches that commit's raw Markdown (`https://raw.githubusercontent.com/<github_repo>/<sha>/_recipes/<slug>.md`), parses its YAML `ingredients` and Markdown instructions, and switches the displayed recipe in-place (with `?versija=<sha>` URL support and a banner to return to the newest version).
-   - **Persistent Comments & Improvement Notes (`.recipe-comments-panel`)**: Embeds **Utterances** (GitHub Issues) or **Giscus** (GitHub Discussions) configured via `site.comments` in `_config.yml`, alongside a pre-filled **+ Jauns uzlabojums (GitHub Issue)** link.
+   - **Persistent Comments & Improvement Notes (`.recipe-comments-panel`)**: Embeds **Utterances** (GitHub Issues) or **Giscus** (GitHub Discussions) configured via `site.comments` in `_config.yml`.
+5. **Page Requests & New Recipe Submissions (`pievienot.html` / `/pievienot/`)**:
+   - Accessible from the header navigation button **Pievienot ko jaunu** next to **Visas receptes**.
+   - Provides an interactive request builder (`#page-requests-root` in `assets/js/search.js`) that opens a pre-filled GitHub Issue (`pieprasijums` label) for new recipes, recipe edits, or site features, a live board of open/closed requests fetched from GitHub Issues API, and an embedded Utterances quick-comment thread.
 
 ## 3. Git Branching & Deployment Workflow
 
