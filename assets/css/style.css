@@ -953,6 +953,16 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
+.recipe-comments-panel .recipe-history-subsection {
+  margin-top: 1.35rem;
+  padding: 1.1rem 0 0;
+  border: none;
+  border-top: 1px solid var(--border-color);
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+}
+
 .history-summary {
   display: flex;
   align-items: center;
@@ -1258,6 +1268,52 @@ body {
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
 }
 
+.comment-token-panel {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background-color: #fff;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+}
+
+.comment-token-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.4rem;
+}
+
+.comment-token-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.comment-token-input {
+  flex: 1;
+  min-width: 220px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  padding: 0.45rem 0.7rem;
+}
+
+.comment-token-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+}
+
+.comment-token-hint a {
+  color: var(--brand-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.comment-token-hint a:hover {
+  text-decoration: underline;
+}
+
 .comment-box-actions {
   display: flex;
   align-items: center;
@@ -1268,6 +1324,10 @@ body {
 }
 
 .comment-box-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
   font-size: 0.85rem;
 }
 
@@ -1276,11 +1336,38 @@ body {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
+.comment-token-toggle {
+  background: none;
+  border: none;
+  padding: 0.15rem 0.35rem;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: color 0.12s ease, background-color 0.12s ease;
+}
+
+.comment-token-toggle:hover {
+  color: var(--brand-primary);
+  background-color: var(--bg-accent-subtle);
+}
+
+.comment-token-toggle.has-token {
+  color: var(--brand-primary);
+}
+
 .comment-box-btns {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.btn-primary-cta:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
 
 .recipe-comment-toast {
@@ -1292,6 +1379,12 @@ body {
   background-color: #e8f5e9;
   border: 1px solid #c8e6c9;
   border-radius: var(--radius-sm);
+}
+
+.recipe-comment-toast.is-error {
+  color: #b71c1c;
+  background-color: #ffebee;
+  border-color: #ffcdd2;
 }
 
 .versioned-comments-section {
