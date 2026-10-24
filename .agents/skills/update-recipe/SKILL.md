@@ -22,11 +22,13 @@ Follow this procedure whenever the user wants to modify an existing recipe in `_
 
 ## Step 1: Sync with `main` & Read the Target Recipe
 
-1. Ensure your local repository is synced with `origin/main` and create a dedicated update branch (`fix/<slug>`):
+1. Ensure your local repository is synced with `origin/main` and create a dedicated update branch:
+   - **Standard recipe update**: `fix/<slug>`
+   - **When working on a GitHub Issue `#<IssueNumber>`** (see [`work-on-issue`](../work-on-issue/SKILL.md)): `fix/<IssueNumber>-<slug>`
    ```powershell
    git fetch origin
    git checkout -B main origin/main
-   git checkout -b fix/<slug>
+   git checkout -b fix/<slug> # or fix/<IssueNumber>-<slug> when working on Issue #<IssueNumber>
    ```
 2. Read the existing recipe file `_recipes/<slug>.md` completely.
 
@@ -67,12 +69,14 @@ Fix any validation errors or warnings before committing.
 
 Because the recipe page's **Versiju vēsture** panel fetches and displays Git commit messages directly to the user on the website, write the commit message in **clear, natural Latvian** summarizing what changed in this new version:
 
-1. Stage, commit, and push the `fix/<slug>` branch:
+1. Stage, commit, and push the `fix/<slug>` (or `fix/<IssueNumber>-<slug>`) branch:
+   - If working on a GitHub Issue `#<IssueNumber>`, append `(Closes #<IssueNumber>)` to the end of the Latvian commit message.
    ```powershell
    git add _recipes/<slug>.md
-   git commit -m "<Concise Latvian summary of the recipe update, e.g.: Alabamas baltā mērce: samazināts ābolu etiķis uz 40 ml biezākai konsistencei>"
-   git push -u origin fix/<slug>
+   git commit -m "<Concise Latvian summary of the recipe update, e.g.: Alabamas baltā mērce: samazināts ābolu etiķis uz 40 ml biezākai konsistencei (ja ir Issue: Closes #<IssueNumber>)>"
+   git push -u origin <branch-name>
    ```
 2. Provide the user with:
    - A concise summary of the changes applied (both in `ingredients` and inline instructions).
-   - The branch name (`fix/<slug>`) and direct Pull Request URL (`https://github.com/HermanisV/gurkis.lv/pull/new/fix/<slug>`).
+   - The branch name (`fix/<slug>` or `fix/<IssueNumber>-<slug>`) and direct Pull Request URL (`https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`).
+   - **If working on a GitHub Issue `#<IssueNumber>`**: Also prepare a ready-to-copy Latvian comment block (starting with `[Ieviests]`) and instruct the user to paste it into `https://github.com/HermanisV/gurkis.lv/issues/<IssueNumber>` and close the ticket (per [`work-on-issue`](../work-on-issue/SKILL.md)).

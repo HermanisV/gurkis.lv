@@ -43,7 +43,11 @@ The repository is built natively by GitHub Pages using Jekyll:
 ## 3. Git Branching & Deployment Workflow
 
 - **Never commit or push directly to `main`**.
-- Create a dedicated branch (`feat/<topic>` or `fix/<topic>`) from latest `origin/main`, commit changes there, and push with `git push -u origin <branch-name>`.
+- Create a dedicated branch from latest `origin/main`:
+  - **Without an active GitHub Issue**: `feat/<topic>` or `fix/<topic>`
+  - **When working on a GitHub Issue `#<IssueNumber>`** (see [`work-on-issue`](../work-on-issue/SKILL.md)): `feat/<IssueNumber>-<topic>` or `fix/<IssueNumber>-<topic>`
+- Commit changes in natural Latvian (appending `(Closes #<IssueNumber>)` if working on an issue) and push with `git push -u origin <branch-name>`.
 - Provide the branch name and PR creation link (`https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`) to the user.
+- **If working on a GitHub Issue `#<IssueNumber>`**: Prepare a ready-to-copy Latvian summary comment (starting with `[Ieviests]`) and instruct the user to add it to `https://github.com/HermanisV/gurkis.lv/issues/<IssueNumber>` and close the ticket.
 - Merging into `main` triggers `.github/workflows/deploy-pages.yml` to validate recipes, build Jekyll, and deploy to GitHub Pages.
 

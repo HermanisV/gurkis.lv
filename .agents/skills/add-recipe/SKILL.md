@@ -92,13 +92,22 @@ Follow this step-by-step procedure whenever the user provides a new recipe (via 
    ```
 2. Fix any reported warnings or errors (missing frontmatter fields, forbidden imperial units, or invalid filenames) before committing.
 3. **Never commit or push directly to `main` (only `feat/` and `fix/` branches are allowed)**:
-   - Ensure changes are on a dedicated branch named `feat/<slug>` (for new recipes) or `fix/<slug>` (for recipe fixes), branched from latest `origin/main`.
-   - Stage, commit, and push the branch to `origin`:
-     ```powershell
-     git checkout -b feat/<slug>
-     git add _recipes/<slug>.md
-     git commit -m "Add <recipe title> recipe"
-     git push -u origin feat/<slug>
-     ```
-   - Report the branch name (`feat/<slug>`) and PR link (`https://github.com/HermanisV/gurkis.lv/pull/new/feat/<slug>`) to the user for review and merge.
+   - **If NOT working on a GitHub Issue**:
+     - Create branch `feat/<slug>` from latest `origin/main` and commit in natural Latvian:
+       ```powershell
+       git checkout -b feat/<slug>
+       git add _recipes/<slug>.md
+       git commit -m "Pievienota <recipe title> recepte"
+       git push -u origin feat/<slug>
+       ```
+     - Report the branch name (`feat/<slug>`) and PR link (`https://github.com/HermanisV/gurkis.lv/pull/new/feat/<slug>`) to the user.
+   - **If working on a GitHub Issue `#<IssueNumber>`** (followed via [`work-on-issue`](../work-on-issue/SKILL.md)):
+     - Include the issue number in the branch name (`feat/<IssueNumber>-<slug>`) and append `(Closes #<IssueNumber>)` to the commit message:
+       ```powershell
+       git checkout -b feat/<IssueNumber>-<slug>
+       git add _recipes/<slug>.md
+       git commit -m "Pievienota <recipe title> recepte (Closes #<IssueNumber>)"
+       git push -u origin feat/<IssueNumber>-<slug>
+       ```
+     - Provide the PR link (`https://github.com/HermanisV/gurkis.lv/pull/new/feat/<IssueNumber>-<slug>`), prepare a ready-to-copy Latvian comment block (starting with `[Ieviests]`), and instruct the user to post the comment on `https://github.com/HermanisV/gurkis.lv/issues/<IssueNumber>` and close the ticket.
 
