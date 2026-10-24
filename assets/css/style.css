@@ -1242,85 +1242,8 @@ body {
   background-color: var(--bg-page);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
-  padding: 1rem 1.15rem;
+  padding: 0.85rem 1rem 0.65rem;
   margin-bottom: 1.25rem;
-}
-
-.recipe-comment-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  font-family: inherit;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  color: var(--text-main);
-  background-color: #fff;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 0.9rem;
-  resize: vertical;
-  min-height: 82px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.recipe-comment-textarea:focus {
-  outline: none;
-  border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
-}
-
-.comment-token-panel {
-  margin-top: 0.75rem;
-  padding: 0.75rem 0.9rem;
-  background-color: #fff;
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-sm);
-}
-
-.comment-token-label {
-  display: block;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: var(--text-main);
-  margin-bottom: 0.4rem;
-}
-
-.comment-token-row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.comment-token-input {
-  flex: 1;
-  min-width: 220px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.85rem;
-  padding: 0.45rem 0.7rem;
-}
-
-.comment-token-hint {
-  margin: 0.45rem 0 0;
-  font-size: 0.78rem;
-}
-
-.comment-token-hint a {
-  color: var(--brand-primary);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.comment-token-hint a:hover {
-  text-decoration: underline;
-}
-
-.comment-box-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
 }
 
 .comment-box-meta {
@@ -1331,60 +1254,33 @@ body {
   font-size: 0.85rem;
 }
 
+.comment-box-meta-top {
+  margin-bottom: 0.45rem;
+}
+
 .comment-box-meta strong {
   color: var(--brand-primary);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-.comment-token-toggle {
-  background: none;
-  border: none;
-  padding: 0.15rem 0.35rem;
-  font-family: inherit;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: color 0.12s ease, background-color 0.12s ease;
+.utterances-input-only-viewport {
+  position: relative;
+  overflow: hidden;
+  height: var(--utterances-box-height, 224px);
+  transition: height 0.12s ease;
 }
 
-.comment-token-toggle:hover {
-  color: var(--brand-primary);
-  background-color: var(--bg-accent-subtle);
+.utterances-input-only-viewport .comments-widget-container {
+  min-height: 0;
 }
 
-.comment-token-toggle.has-token {
-  color: var(--brand-primary);
-}
-
-.comment-box-btns {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.btn-primary-cta:disabled {
-  opacity: 0.65;
-  cursor: wait;
-}
-
-.recipe-comment-toast {
-  margin-top: 0.75rem;
-  padding: 0.6rem 0.85rem;
-  font-size: 0.86rem;
-  line-height: 1.4;
-  color: #1b5e20;
-  background-color: #e8f5e9;
-  border: 1px solid #c8e6c9;
-  border-radius: var(--radius-sm);
-}
-
-.recipe-comment-toast.is-error {
-  color: #b71c1c;
-  background-color: #ffebee;
-  border-color: #ffcdd2;
+.utterances-input-only-viewport .utterances {
+  position: absolute !important;
+  left: 0;
+  right: 0;
+  bottom: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
 }
 
 .versioned-comments-section {
