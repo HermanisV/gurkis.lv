@@ -308,61 +308,41 @@ layout: default
         </div>
       </div>
 
-      <!-- Komentāru pievienošanas logs (tajā pašā logā, bez Utterances pilnā logrīka) -->
-      <div class="recipe-comment-box" id="recipe-comment-box"
-           data-issue-label="{{ site.comments.label | default: 'receptes-piezimes' }}">
-        <div class="comment-input-wrap">
-          <textarea
-            id="recipe-comment-textarea"
-            class="recipe-comment-textarea"
-            rows="3"
-            placeholder="Ieraksti savu novērojumu vai ieteikumu nākamajai gatavošanas reizei (piem., par cepšanas laiku, garšvielām vai proporcijām)..."
-            aria-label="Piezīme vai uzlabojums receptei"
-          ></textarea>
+      <!-- Utterances komentāru ievades logs (rāda tikai ievades kasti ar GitHub Login, paslēpjot dublēto komentāru sarakstu) -->
+      <div class="recipe-comment-box" id="recipe-comment-box">
+        <div class="comment-box-meta comment-box-meta-top">
+          <span class="panel-hint">Piezīme pie versijas: <strong id="recipe-comment-active-version">v1</strong></span>
         </div>
-
-        <div id="recipe-token-panel" class="comment-token-panel" hidden>
-          <label for="recipe-github-token-input" class="comment-token-label">
-            GitHub Personal Access Token (vienreizēja iestatīšana šajā pārlūkā):
-          </label>
-          <div class="comment-token-row">
-            <input
-              type="password"
-              id="recipe-github-token-input"
-              class="request-input comment-token-input"
-              placeholder="ghp_... vai github_pat_..."
-              autocomplete="off"
-            >
-            <button type="button" id="recipe-token-save-btn" class="btn-outline-sm">
-              Saglabāt
-            </button>
-            <button type="button" id="recipe-token-clear-btn" class="btn-outline-sm" hidden>
-              Notīrīt
-            </button>
-          </div>
-          <p class="panel-hint comment-token-hint">
-            Nepieciešams, lai publicētu Utterances komentāru tieši no šī loga. <a href="https://github.com/settings/tokens/new?description=Gurkis+LV+komentari&scopes=public_repo" target="_blank" rel="noopener noreferrer">Izveidot GitHub Token (ar <code>public_repo</code> atļauju) ↗</a>
-          </p>
-        </div>
-
-        <div class="comment-box-actions">
-          <div class="comment-box-meta">
-            <span class="panel-hint">Piezīme pie versijas: <strong id="recipe-comment-active-version">v1</strong></span>
-            <button type="button" id="recipe-token-toggle-btn" class="comment-token-toggle" title="Iestatīt vai mainīt GitHub piekļuves atslēgu (Token)">
-              🔑 GitHub piekļuve
-            </button>
-          </div>
-          <div class="comment-box-btns">
-            <button
-              type="button"
-              id="recipe-comment-submit-btn"
-              class="btn-primary-cta"
-            >
-              Pievienot komentāru
-            </button>
+        <div class="utterances-input-only-viewport" id="utterances-input-viewport">
+          <div class="comments-widget-container">
+            {% if site.comments.provider == "giscus" and site.comments.giscus_repo_id != "" %}
+              <script src="https://giscus.app/client.js"
+                      data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+                      data-repo-id="{{ site.comments.giscus_repo_id }}"
+                      data-category="{{ site.comments.giscus_category | default: 'Receptes' }}"
+                      data-category-id="{{ site.comments.giscus_category_id }}"
+                      data-mapping="{{ site.comments.issue_term | default: 'pathname' }}"
+                      data-strict="0"
+                      data-reactions-enabled="1"
+                      data-emit-metadata="0"
+                      data-input-position="top"
+                      data-theme="{{ site.comments.theme | default: 'light' }}"
+                      data-lang="lv"
+                      crossorigin="anonymous"
+                      async>
+              </script>
+            {% else %}
+              <script src="https://utteranc.es/client.js"
+                      repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+                      issue-term="{{ site.comments.issue_term | default: 'pathname' }}"
+                      label="{{ site.comments.label | default: 'receptes-piezimes' }}"
+                      theme="{{ site.comments.theme | default: 'github-light' }}"
+                      crossorigin="anonymous"
+                      async>
+              </script>
+            {% endif %}
           </div>
         </div>
-        <div id="recipe-comment-toast" class="recipe-comment-toast" hidden role="status" aria-live="polite"></div>
       </div>
 
       <!-- Komentāru saraksta sadaļa: Pievienotās piezīmes (ar versijas atzīmi) -->
