@@ -1214,11 +1214,16 @@
     const versionRestoreBtn = document.getElementById("recipe-version-restore-btn");
     const versionedCommentsSection = document.getElementById("recipe-versioned-comments");
     const versionedCommentsList = document.getElementById("recipe-versioned-comments-list");
+    const recipeCommentBox = document.getElementById("recipe-comment-box");
     const recipeCommentTextarea = document.getElementById("recipe-comment-textarea");
     const recipeCommentSubmitBtn = document.getElementById("recipe-comment-submit-btn");
     const recipeCommentActiveVersion = document.getElementById("recipe-comment-active-version");
-    const recipeViewIssueLink = document.getElementById("recipe-view-github-issue-link");
     const recipeCommentToast = document.getElementById("recipe-comment-toast");
+    const recipeTokenPanel = document.getElementById("recipe-token-panel");
+    const recipeTokenInput = document.getElementById("recipe-github-token-input");
+    const recipeTokenSaveBtn = document.getElementById("recipe-token-save-btn");
+    const recipeTokenClearBtn = document.getElementById("recipe-token-clear-btn");
+    const recipeTokenToggleBtn = document.getElementById("recipe-token-toggle-btn");
     const recipeCommentsCountBadge = document.getElementById("recipe-comments-count-badge");
     const recipeCommentsEmpty = document.getElementById("recipe-comments-empty");
     const recipeCommentsPagination = document.getElementById("recipe-comments-pagination");
@@ -1231,18 +1236,60 @@
       const recipeSlug = recipePath
         .replace(/^_recipes[/\\]/, "")
         .replace(/\.md$/, "");
+      const issueLabel =
+        (recipeCommentBox && recipeCommentBox.dataset.issueLabel) || "receptes-piezimes";
       const cacheKey = `gurkis_commits_v2_${repo}_${branch}_${recipePath}`;
       const commentsCacheKey = `gurkis_comments_v2_${repo}_${recipeSlug}`;
+      const TOKEN_STORAGE_KEY = "gurkis_github_token";
       const CACHE_TTL_MS = 60 * 1000; // 1 minute cache to stay fresh after merges
 
       let loadedCommits = [];
       let activeCommitSha = "";
       let recipeMatchedIssue = null;
       let toastTimer = null;
+      let isSubmittingComment = false;
 
-      function showCommentToast(msg, durationMs) {
+      function getStoredGithubToken() {
+        try {
+          return (localStorage.getItem(TOKEN_STORAGE_KEY) || "").trim();
+        } catch (_e) {
+          return "";
+        }
+      }
+
+      function setStoredGithubToken(token) {
+        const cleaned = (token || "").trim();
+        try {
+          if (cleaned) {
+            localStorage.setItem(TOKEN_STORAGE_KEY, cleaned);
+          } else {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+          }
+        } catch (_e) {
+          // Ignore storage errors
+        }
+        syncTokenUiState();
+      }
+
+      function syncTokenUiState() {
+        const hasToken = Boolean(getStoredGithubToken());
+        if (recipeTokenToggleBtn) {
+          recipeTokenToggleBtn.textContent = hasToken
+            ? "🔑 GitHub piekļuve (aktīva)"
+            : "🔑 GitHub piekļuve";
+          recipeTokenToggleBtn.classList.toggle("has-token", hasToken);
+        }
+        if (recipeTokenClearBtn) {
+          recipeTokenClearBtn.hidden = !hasToken;
+        }
+      }
+
+      syncTokenUiState();
+
+      function showCommentToast(msg, durationMs, isError) {
         if (!recipeCommentToast) return;
         recipeCommentToast.textContent = msg;
+        recipeCommentToast.classList.toggle("is-error", Boolean(isError));
         recipeCommentToast.hidden = false;
         if (toastTimer) clearTimeout(toastTimer);
         toastTimer = setTimeout(() => {
@@ -1258,49 +1305,240 @@
         }
       }
 
-      function handleCommentSubmit() {
-        const commentText = (recipeCommentTextarea && recipeCommentTextarea.value.trim()) || "";
-        const verStr = (recipeCommentActiveVersion && recipeCommentActiveVersion.textContent.trim()) || "Jaunākā";
-
-        if (recipeMatchedIssue && recipeMatchedIssue.html_url) {
-          const targetUrl = `${recipeMatchedIssue.html_url}#new_comment_field`;
-
-          if (commentText) {
-            const formatted = `[Piezīme pie ${verStr}]\n\n${commentText}`;
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-              navigator.clipboard
-                .writeText(formatted)
-                .then(() => {
-                  showCommentToast(
-                    "✓ Piezīmes teksts nokopēts starpliktuvē! Atveras GitHub komentāru lauks — ielīmē (Ctrl+V) un spied 'Comment'.",
-                    6000
-                  );
-                  window.open(targetUrl, "_blank", "noopener");
-                })
-                .catch(() => {
-                  showCommentToast("Atveras GitHub diskusija — ieraksti komentāru atvērtajā logā.", 4000);
-                  window.open(targetUrl, "_blank", "noopener");
-                });
-            } else {
-              showCommentToast("Atveras GitHub diskusija — ieraksti komentāru atvērtajā logā.", 4000);
-              window.open(targetUrl, "_blank", "noopener");
-            }
-          } else {
-            window.open(targetUrl, "_blank", "noopener");
+      if (recipeTokenToggleBtn && recipeTokenPanel) {
+        recipeTokenToggleBtn.addEventListener("click", () => {
+          const willOpen = recipeTokenPanel.hidden;
+          recipeTokenPanel.hidden = !willOpen;
+          if (willOpen && recipeTokenInput) {
+            recipeTokenInput.value = getStoredGithubToken();
+            recipeTokenInput.focus();
           }
-        } else {
-          // No issue exists yet -> Create new issue on GitHub with prefilled title & body
-          const params = new URLSearchParams();
-          params.set("labels", "receptes-piezimes");
-          params.set("title", `receptes/${recipeSlug}/`);
-          const initialBody = commentText
-            ? `[Piezīme pie ${verStr}]\n\n${commentText}`
-            : `Piezīme pie receptes [${verStr}]:\n- `;
-          params.set("body", initialBody);
-          const newIssueUrl = `https://github.com/${repo}/issues/new?${params.toString()}`;
+        });
+      }
 
-          showCommentToast("Atveras jauna ieraksta izveide GitHub — nospied 'Submit new issue'.", 5000);
-          window.open(newIssueUrl, "_blank", "noopener");
+      if (recipeTokenSaveBtn && recipeTokenInput) {
+        recipeTokenSaveBtn.addEventListener("click", () => {
+          const val = recipeTokenInput.value.trim();
+          if (!val) {
+            showCommentToast("Lūdzu, ievadi derīgu GitHub Personal Access Token.", 4000, true);
+            recipeTokenInput.focus();
+            return;
+          }
+          setStoredGithubToken(val);
+          if (recipeTokenPanel) recipeTokenPanel.hidden = true;
+          if (recipeCommentTextarea && recipeCommentTextarea.value.trim()) {
+            handleCommentSubmit();
+          } else {
+            showCommentToast("✓ GitHub piekļuves atslēga saglabāta šajā pārlūkā.", 4000, false);
+          }
+        });
+      }
+
+      if (recipeTokenClearBtn) {
+        recipeTokenClearBtn.addEventListener("click", () => {
+          setStoredGithubToken("");
+          if (recipeTokenInput) recipeTokenInput.value = "";
+          showCommentToast("GitHub piekļuves atslēga noņemta no pārlūka.", 4000, false);
+        });
+      }
+
+      async function ensureUtterancesIssue(token) {
+        if (recipeMatchedIssue && recipeMatchedIssue.number) {
+          return recipeMatchedIssue;
+        }
+
+        const authHeaders = {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        };
+
+        // 1. Check if an open issue already exists for this recipe slug
+        const searchOpenUrl = `https://api.github.com/repos/${repo}/issues?state=open&per_page=100`;
+        const openResp = await fetch(searchOpenUrl, { headers: authHeaders });
+        if (openResp.status === 401 || openResp.status === 403) {
+          const authErr = new Error("AUTH_ERROR");
+          authErr.status = openResp.status;
+          throw authErr;
+        }
+        if (openResp.ok) {
+          const openIssues = await openResp.json();
+          if (Array.isArray(openIssues)) {
+            const existingOpen = openIssues.find((issue) => {
+              if (issue.pull_request) return false;
+              const t = String(issue.title || "");
+              const b = String(issue.body || "");
+              return (
+                t.includes(recipeSlug) ||
+                b.includes(`receptes/${recipeSlug}/`) ||
+                b.includes(`receptes/${recipeSlug}`)
+              );
+            });
+            if (existingOpen) {
+              recipeMatchedIssue = {
+                number: existingOpen.number,
+                html_url: existingOpen.html_url
+              };
+              return recipeMatchedIssue;
+            }
+          }
+        }
+
+        // 2. Create a new Utterances-compatible thread issue for this recipe
+        const cleanPageUrl = window.location.href.split("?")[0].split("#")[0];
+        const pageTitle = (titleEl && titleEl.textContent.trim()) || recipeSlug;
+        const pageDesc = (leadEl && leadEl.textContent.trim()) || "";
+        const issueBody = pageDesc
+          ? `# ${pageTitle}\n\n${pageDesc}\n\n[${cleanPageUrl}](${cleanPageUrl})`
+          : `# ${pageTitle}\n\n[${cleanPageUrl}](${cleanPageUrl})`;
+
+        const createResp = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+          method: "POST",
+          headers: authHeaders,
+          body: JSON.stringify({
+            title: `receptes/${recipeSlug}/`,
+            body: issueBody,
+            labels: [issueLabel]
+          })
+        });
+
+        if (createResp.status === 401 || createResp.status === 403) {
+          const authErr = new Error("AUTH_ERROR");
+          authErr.status = createResp.status;
+          throw authErr;
+        }
+
+        if (!createResp.ok) {
+          throw new Error(`GitHub Issue izveides kļūda (HTTP ${createResp.status})`);
+        }
+
+        const createdIssue = await createResp.json();
+        recipeMatchedIssue = {
+          number: createdIssue.number,
+          html_url: createdIssue.html_url
+        };
+        return recipeMatchedIssue;
+      }
+
+      async function handleCommentSubmit() {
+        if (isSubmittingComment) return;
+
+        const commentText = (recipeCommentTextarea && recipeCommentTextarea.value.trim()) || "";
+        if (!commentText) {
+          showCommentToast("Lūdzu, vispirms ieraksti komentāra tekstu.", 4000, true);
+          if (recipeCommentTextarea) recipeCommentTextarea.focus();
+          return;
+        }
+
+        // If user typed a token in the open token input field, save it automatically
+        if (recipeTokenPanel && !recipeTokenPanel.hidden && recipeTokenInput && recipeTokenInput.value.trim()) {
+          setStoredGithubToken(recipeTokenInput.value.trim());
+          recipeTokenPanel.hidden = true;
+        }
+
+        const token = getStoredGithubToken();
+        if (!token) {
+          if (recipeTokenPanel) {
+            recipeTokenPanel.hidden = false;
+            if (recipeTokenInput) recipeTokenInput.focus();
+          }
+          showCommentToast(
+            "Lai publicētu komentāru šajā pašā logā, vienu reizi ievadi savu GitHub Token un nospied 'Pievienot komentāru'.",
+            6000,
+            false
+          );
+          return;
+        }
+
+        isSubmittingComment = true;
+        if (recipeCommentSubmitBtn) {
+          recipeCommentSubmitBtn.disabled = true;
+          recipeCommentSubmitBtn.textContent = "Publicē komentāru…";
+        }
+
+        try {
+          const targetIssue = await ensureUtterancesIssue(token);
+          const commentResp = await fetch(
+            `https://api.github.com/repos/${repo}/issues/${targetIssue.number}/comments`,
+            {
+              method: "POST",
+              headers: {
+                Accept: "application/vnd.github+json",
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ body: commentText })
+            }
+          );
+
+          if (commentResp.status === 401 || commentResp.status === 403) {
+            const authErr = new Error("AUTH_ERROR");
+            authErr.status = commentResp.status;
+            throw authErr;
+          }
+
+          if (!commentResp.ok) {
+            throw new Error(`HTTP ${commentResp.status}`);
+          }
+
+          const createdComment = await commentResp.json();
+          if (recipeCommentTextarea) {
+            recipeCommentTextarea.value = "";
+          }
+          if (recipeTokenPanel) {
+            recipeTokenPanel.hidden = true;
+          }
+
+          const newCommentEntry = {
+            author: (createdComment.user && createdComment.user.login) || "Autors",
+            created_at: createdComment.created_at || new Date().toISOString(),
+            body: String(createdComment.body || commentText).trim(),
+            url: createdComment.html_url || targetIssue.html_url || "",
+            status: "open",
+            issueState: "open",
+            issueNumber: targetIssue.number
+          };
+
+          const updatedList = [newCommentEntry].concat(allCommentsForRecipe);
+          try {
+            sessionStorage.setItem(
+              commentsCacheKey,
+              JSON.stringify({
+                timestamp: Date.now(),
+                data: updatedList,
+                matchedIssue: recipeMatchedIssue
+              })
+            );
+          } catch (_e) {
+            // Ignore storage quota errors
+          }
+
+          renderVersionedComments(updatedList, loadedCommits);
+          showCommentToast("✓ Komentārs veiksmīgi pievienots!", 4000, false);
+        } catch (err) {
+          if (err && err.message === "AUTH_ERROR") {
+            if (recipeTokenPanel) {
+              recipeTokenPanel.hidden = false;
+              if (recipeTokenInput) recipeTokenInput.focus();
+            }
+            showCommentToast(
+              "Neizdevās autentificēties GitHub (401/403). Pārbaudi, vai GitHub Token ir derīgs un ar 'public_repo' atļauju.",
+              7000,
+              true
+            );
+          } else {
+            showCommentToast(
+              `Neizdevās pievienot komentāru (${(err && err.message) || "tīkla kļūda"}). Mēģini vēlreiz.`,
+              6000,
+              true
+            );
+          }
+        } finally {
+          isSubmittingComment = false;
+          if (recipeCommentSubmitBtn) {
+            recipeCommentSubmitBtn.disabled = false;
+            recipeCommentSubmitBtn.textContent = "Pievienot komentāru";
+          }
         }
       }
 
@@ -2115,15 +2353,6 @@
             const cached = JSON.parse(cachedRaw);
             if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
               recipeMatchedIssue = cached.matchedIssue || null;
-              if (recipeViewIssueLink) {
-                const targetViewUrl = cached.viewIssueUrl || (recipeMatchedIssue && recipeMatchedIssue.html_url);
-                if (targetViewUrl) {
-                  recipeViewIssueLink.href = targetViewUrl;
-                  recipeViewIssueLink.hidden = false;
-                } else {
-                  recipeViewIssueLink.hidden = true;
-                }
-              }
               renderVersionedComments(cached.data, commits);
               return;
             }
@@ -2153,7 +2382,6 @@
             );
           });
 
-          let viewIssueUrl = null;
           if (matchingIssues.length > 0) {
             // Prioritize an open issue as target for new comment additions
             const openIssue = matchingIssues.find(
@@ -2165,23 +2393,13 @@
                 number: openIssue.number,
                 html_url: openIssue.html_url
               };
-              viewIssueUrl = openIssue.html_url;
             } else {
               // All matching issues are closed (e.g. earlier feedback was resolved/rejected)
-              // Setting recipeMatchedIssue to null ensures "Pievienot piezīmi" opens a fresh issue for future notes
+              // Setting recipeMatchedIssue to null ensures a fresh Utterances thread is created for future notes
               recipeMatchedIssue = null;
-              viewIssueUrl = matchingIssues[0].html_url;
-            }
-
-            if (recipeViewIssueLink && viewIssueUrl) {
-              recipeViewIssueLink.href = viewIssueUrl;
-              recipeViewIssueLink.hidden = false;
             }
           } else {
             recipeMatchedIssue = null;
-            if (recipeViewIssueLink) {
-              recipeViewIssueLink.hidden = true;
-            }
           }
 
           const collected = [];
@@ -2237,8 +2455,7 @@
               JSON.stringify({
                 timestamp: Date.now(),
                 data: collected,
-                matchedIssue: recipeMatchedIssue,
-                viewIssueUrl: viewIssueUrl
+                matchedIssue: recipeMatchedIssue
               })
             );
           } catch (_e) {

@@ -299,32 +299,6 @@ layout: default
   </div>
 
   <div class="recipe-extras">
-    <details class="recipe-history-panel" id="recipe-history-details"
-             data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
-             data-branch="{{ site.github_branch | default: 'main' }}"
-             data-recipe-path="{{ page.path }}">
-      <summary class="history-summary">
-        <div class="history-summary-title">
-          <span class="history-icon" aria-hidden="true">🕒</span>
-          <span>Versiju vēsture</span>
-          <span class="badge badge-tag" id="recipe-version-badge" hidden></span>
-        </div>
-        <span class="history-toggle-hint">Rādīt izmaiņas ▾</span>
-      </summary>
-
-      <div class="history-body">
-        <div class="history-actions">
-          <span class="panel-hint">Automātiska šīs receptes izmaiņu vēsture no GitHub repozitorija.</span>
-          <a href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/commits/{{ site.github_branch | default: 'main' }}/{{ page.path }}"
-             target="_blank" rel="noopener noreferrer" class="history-github-link">
-            Skatīt pilnu vēsturi GitHub ↗
-          </a>
-        </div>
-        <div id="recipe-history-status" class="history-status">Ielādē versiju vēsturi…</div>
-        <ol id="recipe-history-list" class="history-timeline" hidden></ol>
-      </div>
-    </details>
-
     {% if site.comments.enabled %}
     <section class="recipe-comments-panel" aria-labelledby="comments-heading">
       <div class="comments-header">
@@ -334,8 +308,9 @@ layout: default
         </div>
       </div>
 
-      <!-- Komentāru pievienošanas logs (bez jau pievienotajiem komentāriem) -->
-      <div class="recipe-comment-box" id="recipe-comment-box">
+      <!-- Komentāru pievienošanas logs (tajā pašā logā, bez Utterances pilnā logrīka) -->
+      <div class="recipe-comment-box" id="recipe-comment-box"
+           data-issue-label="{{ site.comments.label | default: 'receptes-piezimes' }}">
         <div class="comment-input-wrap">
           <textarea
             id="recipe-comment-textarea"
@@ -345,28 +320,45 @@ layout: default
             aria-label="Piezīme vai uzlabojums receptei"
           ></textarea>
         </div>
+
+        <div id="recipe-token-panel" class="comment-token-panel" hidden>
+          <label for="recipe-github-token-input" class="comment-token-label">
+            GitHub Personal Access Token (vienreizēja iestatīšana šajā pārlūkā):
+          </label>
+          <div class="comment-token-row">
+            <input
+              type="password"
+              id="recipe-github-token-input"
+              class="request-input comment-token-input"
+              placeholder="ghp_... vai github_pat_..."
+              autocomplete="off"
+            >
+            <button type="button" id="recipe-token-save-btn" class="btn-outline-sm">
+              Saglabāt
+            </button>
+            <button type="button" id="recipe-token-clear-btn" class="btn-outline-sm" hidden>
+              Notīrīt
+            </button>
+          </div>
+          <p class="panel-hint comment-token-hint">
+            Nepieciešams, lai publicētu Utterances komentāru tieši no šī loga. <a href="https://github.com/settings/tokens/new?description=Gurkis+LV+komentari&scopes=public_repo" target="_blank" rel="noopener noreferrer">Izveidot GitHub Token (ar <code>public_repo</code> atļauju) ↗</a>
+          </p>
+        </div>
+
         <div class="comment-box-actions">
           <div class="comment-box-meta">
             <span class="panel-hint">Piezīme pie versijas: <strong id="recipe-comment-active-version">v1</strong></span>
+            <button type="button" id="recipe-token-toggle-btn" class="comment-token-toggle" title="Iestatīt vai mainīt GitHub piekļuves atslēgu (Token)">
+              🔑 GitHub piekļuve
+            </button>
           </div>
           <div class="comment-box-btns">
-            <a
-              id="recipe-view-github-issue-link"
-              href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn-outline-sm"
-              title="Atvērt receptes diskusiju GitHub"
-              hidden
-            >
-              Skatīt GitHub ↗
-            </a>
             <button
               type="button"
               id="recipe-comment-submit-btn"
               class="btn-primary-cta"
             >
-              <span aria-hidden="true">💬</span> Pievienot piezīmi GitHub ↗
+              Pievienot komentāru
             </button>
           </div>
         </div>
@@ -389,6 +381,33 @@ layout: default
           </button>
         </div>
       </div>
+
+      <!-- Versiju vēsture kā pēdējā apakšsadaļa šajā blokā -->
+      <details class="recipe-history-panel recipe-history-subsection" id="recipe-history-details"
+               data-repo="{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}"
+               data-branch="{{ site.github_branch | default: 'main' }}"
+               data-recipe-path="{{ page.path }}">
+        <summary class="history-summary">
+          <div class="history-summary-title">
+            <span class="history-icon" aria-hidden="true">🕒</span>
+            <span>Versiju vēsture</span>
+            <span class="badge badge-tag" id="recipe-version-badge" hidden></span>
+          </div>
+          <span class="history-toggle-hint">Rādīt izmaiņas ▾</span>
+        </summary>
+
+        <div class="history-body">
+          <div class="history-actions">
+            <span class="panel-hint">Automātiska šīs receptes izmaiņu vēsture no GitHub repozitorija.</span>
+            <a href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/commits/{{ site.github_branch | default: 'main' }}/{{ page.path }}"
+               target="_blank" rel="noopener noreferrer" class="history-github-link">
+              Skatīt pilnu vēsturi GitHub ↗
+            </a>
+          </div>
+          <div id="recipe-history-status" class="history-status">Ielādē versiju vēsturi…</div>
+          <ol id="recipe-history-list" class="history-timeline" hidden></ol>
+        </div>
+      </details>
     </section>
     {% endif %}
   </div>
