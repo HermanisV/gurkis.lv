@@ -4,7 +4,6 @@ title: "Mājas adžika (ar čili kalkulatoru)"
 description: "Klasiska, aromātiska un pikanta dārzeņu adžika no tomātiem, saldās paprikas, ķiplokiem un svaigiem čili pipariem. Pielāgota 400 ml burciņai ar interaktīvu kalkulatoru, kas ļauj brīvi miksēt halapenjo, serrano un habanero piparus."
 categories:
   - Mērces un Marinādes
-  - Salāti un Uzkodas
 tags:
   - adžika
   - čili
@@ -77,3 +76,4 @@ ingredients:
 - **Konsistence:** Ja tomāti ir ļoti sulīgi, pirms vārīšanas daļu izdalītās tomātu sulas var noliet, vai arī pavārīt adžiku katliņā par 10 minūtēm ilgāk bez vāka, lai liekais mitrums iztvaiko.
 - **Vārīšanas laiks:** Vienai 400 ml burciņai pietiek ar 25–30 minūšu vārīšanu, lai saglabātu dārzeņu svaigo krāsu un vitamīnus. Ja izvēlies lielo ražas partiju (vairāki kilogrami dārzeņu), vāri stundu, līdz masa sabiezē.
 - **Pateicība un informācijas avots:** Recepte adaptēta no kulinārijas vietnes *Receptes.lv / TVNET* (Mājas adžika). Fotogrāfijas: Receptes.lv publicitātes foto.
+
