@@ -1,0 +1,142 @@
+<section class="sriracha-calculator" id="sriracha-calculator" aria-label="Sriracha čili kalkulators">
+  <div class="calc-header">
+    <div>
+      <h2 class="calc-title">🌶️ Sriracha mērces un čili kalkulators</h2>
+      <p class="calc-subtitle">Brīvi miksē dažādu šķirņu čili piparus (halapenjo, serrano, habanero) jebkurās proporcijās un svarā — fermentācijas sāls, cukurs, ķiploki un etiķis tiks aprēķināti automātiski.</p>
+    </div>
+    <div class="calc-presets" role="group" aria-label="Kalkulatora priekšiestatījumi">
+      <button type="button" class="calc-preset-btn active" data-preset="classic">Klasiskā (680 g halapenjo)</button>
+      <button type="button" class="calc-preset-btn" data-preset="medium_kick">Pikantais mikslis (400 g halapenjo + 200 g serrano + 20 g habanero)</button>
+      <button type="button" class="calc-preset-btn" data-preset="extra_hot">Ugunīgā (200 g halapenjo + 150 g serrano + 50 g habanero)</button>
+      <button type="button" class="calc-preset-btn" data-preset="small_batch">Neliela partija (50 g halapenjo + 50 g serrano + 20 g habanero)</button>
+    </div>
+  </div>
+
+  <div class="calc-cards-grid">
+    <!-- 1. Pepper Selection & Weights -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">1. Čili piparu izvēle un svars</h3>
+
+      <!-- Jalapeno -->
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-jalapeno">Sarkanie Halapenjo (Jalapeño)</label>
+          <span class="calc-unit-badge" id="sriracha-jalapeno-badge">680 g (100%)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-jalapeno-range" class="calc-range" min="0" max="1500" step="5" value="680" aria-label="Halapenjo piparu svars gramos">
+          <input type="number" id="sriracha-jalapeno" class="calc-input calc-input-sm" min="0" max="5000" step="5" value="680">
+        </div>
+      </div>
+
+      <!-- Serrano -->
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-serrano">Sarkanie Serrano</label>
+          <span class="calc-unit-badge" id="sriracha-serrano-badge">0 g (0%)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-serrano-range" class="calc-range" min="0" max="1000" step="5" value="0" aria-label="Serrano piparu svars gramos">
+          <input type="number" id="sriracha-serrano" class="calc-input calc-input-sm" min="0" max="5000" step="5" value="0">
+        </div>
+      </div>
+
+      <!-- Habanero -->
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-habanero">Habanero (īpaši ass & augļains)</label>
+          <span class="calc-unit-badge" id="sriracha-habanero-badge">0 g (0%)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-habanero-range" class="calc-range" min="0" max="500" step="5" value="0" aria-label="Habanero piparu svars gramos">
+          <input type="number" id="sriracha-habanero" class="calc-input calc-input-sm" min="0" max="2000" step="5" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Fermentation & Flavor Formulation -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">2. Fermentācijas un garšas formula</h3>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-salt-pct">Sāls (% no čili svara — zelta standarts 2.2%)</label>
+          <span class="calc-unit-badge" id="sriracha-salt-pct-badge">2.2%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-salt-pct-range" class="calc-range" min="1.8" max="3.0" step="0.1" value="2.2" aria-label="Sāls procents no čili svara">
+          <input type="number" id="sriracha-salt-pct" class="calc-input calc-input-sm" min="1.5" max="5.0" step="0.1" value="2.2">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-sugar-pct">Gaiši brūnais cukurs (% no čili svara)</label>
+          <span class="calc-unit-badge" id="sriracha-sugar-pct-badge">7.4%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-sugar-pct-range" class="calc-range" min="4.0" max="14.0" step="0.2" value="7.4" aria-label="Cukura procents no čili svara">
+          <input type="number" id="sriracha-sugar-pct" class="calc-input calc-input-sm" min="2.0" max="20.0" step="0.2" value="7.4">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-garlic-pct">Ķiploki (% no čili svara)</label>
+          <span class="calc-unit-badge" id="sriracha-garlic-pct-badge">3.5%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-garlic-pct-range" class="calc-range" min="1.5" max="8.0" step="0.5" value="3.5" aria-label="Ķiploku procents no čili svara">
+          <input type="number" id="sriracha-garlic-pct" class="calc-input calc-input-sm" min="0" max="15.0" step="0.5" value="3.5">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="sriracha-vinegar-pct">Baltais etiķis 5% (% pēc fermentācijas)</label>
+          <span class="calc-unit-badge" id="sriracha-vinegar-pct-badge">17.6%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="sriracha-vinegar-pct-range" class="calc-range" min="10.0" max="30.0" step="0.5" value="17.6" aria-label="Etiķa procents no čili svara">
+          <input type="number" id="sriracha-vinegar-pct" class="calc-input calc-input-sm" min="5.0" max="50.0" step="0.5" value="17.6">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator Output Summary Bar -->
+  <div class="calc-summary-bar">
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Kopējais čili svars</span>
+      <span class="calc-summary-value" id="sriracha-out-total-peppers">680 g</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Paredzamais asums</span>
+      <span class="calc-summary-value" id="sriracha-out-heat">🟢 Klasisks (~5,000 SHU)</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Nepieciešamais sāls</span>
+      <span class="calc-summary-value" id="sriracha-out-salt">15.0 g (1 ēk)</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Gatavā mērce (iznākums)</span>
+      <span class="calc-summary-value" id="sriracha-out-yield">~380 ml (1 pudele)</span>
+    </div>
+  </div>
+
+  <details class="calc-tech-details">
+    <summary>Rādīt detalizētu tehnisko aprēķinu un fermentācijas proporcijas</summary>
+    <div class="calc-tech-grid">
+      <div><strong>Čili mikslis (Halap. / Serr. / Haban.):</strong> <span id="sriracha-tech-split">680 g / 0 g / 0 g</span></div>
+      <div><strong>Scoville asuma indekss:</strong> <span id="sriracha-tech-shu">~5,000 SHU</span></div>
+      <div><strong>Bļodā — Čili kopā:</strong> <span id="sriracha-tech-peppers">680.0 g</span></div>
+      <div><strong>Bļodā — Sāls:</strong> <span id="sriracha-tech-salt">15.0 g (2.20%)</span></div>
+      <div><strong>Bļodā — Brūnais cukurs:</strong> <span id="sriracha-tech-sugar">50.3 g (7.40%)</span></div>
+      <div><strong>Bļodā — Ķiploki:</strong> <span id="sriracha-tech-garlic">23.8 g (~6 daiviņas)</span></div>
+      <div><strong>Blendēšanai — Baltais etiķis:</strong> <span id="sriracha-tech-vinegar">119.7 ml (17.60%)</span></div>
+      <div><strong>Mērces prognozētais tilpums:</strong> <span id="sriracha-tech-yield">~380 ml</span></div>
+      <div><strong>Fermentācijas laiks:</strong> <span>3–5 dienas līdz burbuļiem + 2–3 dienas</span></div>
+      <div><strong>Optimālā telpas temperatūra:</strong> <span>18–22 °C (tumšā vietā)</span></div>
+    </div>
+  </details>
+</section>
