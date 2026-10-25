@@ -708,10 +708,11 @@ body {
   opacity: 0.45;
 }
 
-/* Pizza, Bread & Sriracha Calculators */
+/* Pizza, Bread, Sriracha & Adzika Calculators */
 .pizza-calculator,
 .bread-calculator,
-.sriracha-calculator {
+.sriracha-calculator,
+.adzika-calculator {
   background-color: var(--bg-card);
   border: 2px solid #c5d6c9;
   border-radius: var(--radius-md);

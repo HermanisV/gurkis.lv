@@ -1,0 +1,154 @@
+<section class="adzika-calculator" id="adzika-calculator" aria-label="Adžikas čili kalkulators">
+  <div class="calc-header">
+    <div>
+      <h2 class="calc-title">🌶️ Mājas adžikas un čili kalkulators</h2>
+      <p class="calc-subtitle">Pielāgo čili piparu (halapenjo, serrano, habanero) šķirnes un partijas svaru — tomāti, paprika, ķiploki un garšvielas automātiski aprēķināsies ideālai garšas un asuma bilancei (bāze pielāgota 400 ml burciņai).</p>
+    </div>
+    <div class="calc-presets" role="group" aria-label="Kalkulatora priekšiestatījumi">
+      <button type="button" class="calc-preset-btn active" data-preset="jar_classic">1 burciņa (400 ml) — Klasiska (50 g halapenjo)</button>
+      <button type="button" class="calc-preset-btn" data-preset="jar_spicy">1 burciņa (400 ml) — Pikanta (25 g halapenjo + 25 g serrano)</button>
+      <button type="button" class="calc-preset-btn" data-preset="jar_extra_hot">1 burciņa (400 ml) — Ugunīga (20 g halap. + 20 g serr. + 10 g haban.)</button>
+      <button type="button" class="calc-preset-btn" data-preset="jar_custom">Lielāks mikslis (~1 l) (50 g halap. + 50 g serr. + 20 g haban.)</button>
+      <button type="button" class="calc-preset-btn" data-preset="batch_tvnet">Lielā ražas partija (4.5 l) — TVNET oriģināls</button>
+    </div>
+  </div>
+
+  <div class="calc-cards-grid">
+    <!-- 1. Pepper Selection & Weights -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">1. Čili piparu izvēle un svars</h3>
+
+      <!-- Jalapeno -->
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-jalapeno">Sarkanie Halapenjo (Jalapeño)</label>
+          <span class="calc-unit-badge" id="adzika-jalapeno-badge">50 g (100%)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-jalapeno-range" class="calc-range" min="0" max="1000" step="5" value="50" aria-label="Halapenjo piparu svars gramos">
+          <input type="number" id="adzika-jalapeno" class="calc-input calc-input-sm" min="0" max="3000" step="5" value="50">
+        </div>
+      </div>
+
+      <!-- Serrano -->
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-serrano">Sarkanie Serrano (spilgtam asumam)</label>
+          <span class="calc-unit-badge" id="adzika-serrano-badge">0 g (0%)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-serrano-range" class="calc-range" min="0" max="1000" step="5" value="0" aria-label="Serrano piparu svars gramos">
+          <input type="number" id="adzika-serrano" class="calc-input calc-input-sm" min="0" max="3000" step="5" value="0">
+        </div>
+      </div>
+
+      <!-- Habanero -->
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-habanero">Habanero (intensīvs karstums & augļi)</label>
+          <span class="calc-unit-badge" id="adzika-habanero-badge">0 g (0%)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-habanero-range" class="calc-range" min="0" max="300" step="5" value="0" aria-label="Habanero piparu svars gramos">
+          <input type="number" id="adzika-habanero" class="calc-input calc-input-sm" min="0" max="1000" step="5" value="0">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Base Vegetables & Seasoning Formulation -->
+    <div class="calc-card">
+      <h3 class="calc-card-title">2. Dārzeņu bāze un garšvielu proporcijas</h3>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-veg-ratio">Tomātu & paprikas attiecība pret čili</label>
+          <span class="calc-unit-badge" id="adzika-veg-ratio-badge">4.5× (pa 225 g)</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-veg-ratio-range" class="calc-range" min="2.0" max="8.0" step="0.5" value="4.5" aria-label="Dārzeņu reizinātājs pret čili">
+          <input type="number" id="adzika-veg-ratio" class="calc-input calc-input-sm" min="1.0" max="15.0" step="0.5" value="4.5">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-garlic-pct">Ķiploki (% no čili svara)</label>
+          <span class="calc-unit-badge" id="adzika-garlic-pct-badge">30%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-garlic-pct-range" class="calc-range" min="10" max="50" step="5" value="30" aria-label="Ķiploku procents no čili svara">
+          <input type="number" id="adzika-garlic-pct" class="calc-input calc-input-sm" min="5" max="100" step="5" value="30">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-sugar-pct">Cukurs (% no čili svara)</label>
+          <span class="calc-unit-badge" id="adzika-sugar-pct-badge">40%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-sugar-pct-range" class="calc-range" min="10" max="80" step="5" value="40" aria-label="Cukura procents no čili svara">
+          <input type="number" id="adzika-sugar-pct" class="calc-input calc-input-sm" min="5" max="120" step="5" value="40">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-salt-pct">Sāls (% no čili svara)</label>
+          <span class="calc-unit-badge" id="adzika-salt-pct-badge">12%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-salt-pct-range" class="calc-range" min="5" max="25" step="1" value="12" aria-label="Sāls procents no čili svara">
+          <input type="number" id="adzika-salt-pct" class="calc-input calc-input-sm" min="3" max="40" step="1" value="12">
+        </div>
+      </div>
+
+      <div class="calc-field">
+        <div class="calc-label-row">
+          <label for="adzika-vinegar-pct">Galda etiķis 9% (% no čili svara)</label>
+          <span class="calc-unit-badge" id="adzika-vinegar-pct-badge">10%</span>
+        </div>
+        <div class="calc-slider-group">
+          <input type="range" id="adzika-vinegar-pct-range" class="calc-range" min="5" max="30" step="1" value="10" aria-label="Etiķa procents no čili svara">
+          <input type="number" id="adzika-vinegar-pct" class="calc-input calc-input-sm" min="2" max="50" step="1" value="10">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator Output Summary Bar -->
+  <div class="calc-summary-bar">
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Kopējais čili svars</span>
+      <span class="calc-summary-value" id="adzika-out-total-peppers">50 g</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Paredzamais asums</span>
+      <span class="calc-summary-value" id="adzika-out-heat">🟢 Mērens (~500 SHU)</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Dārzeņi kopā</span>
+      <span class="calc-summary-value" id="adzika-out-total-veggies">500 g</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Gatavā adžika (iznākums)</span>
+      <span class="calc-summary-value" id="adzika-out-yield">~400 ml (1 burciņa)</span>
+    </div>
+  </div>
+
+  <details class="calc-tech-details">
+    <summary>Rādīt detalizētu tehnisko aprēķinu un adžikas proporcijas</summary>
+    <div class="calc-tech-grid">
+      <div><strong>Čili sadalījums (Halap. / Serr. / Haban.):</strong> <span id="adzika-tech-split">50 g / 0 g / 0 g</span></div>
+      <div><strong>Scoville asuma indekss (gatavā mērcē):</strong> <span id="adzika-tech-shu">~500 SHU</span></div>
+      <div><strong>Tomāti / Sarkanā paprika:</strong> <span id="adzika-tech-tom-pap">225 g / 225 g</span></div>
+      <div><strong>Ķiploki:</strong> <span id="adzika-tech-garlic">15.0 g (~3–4 daiv.)</span></div>
+      <div><strong>Cukurs:</strong> <span id="adzika-tech-sugar">20.0 g (1.5 ēk)</span></div>
+      <div><strong>Sāls:</strong> <span id="adzika-tech-salt">6.0 g (1 tk)</span></div>
+      <div><strong>Galda etiķis (9%):</strong> <span id="adzika-tech-vinegar">5.0 ml (1 tk)</span></div>
+      <div><strong>Svaigi zaļumi (kinza/pētersīļi):</strong> <span id="adzika-tech-herbs">5.0 g</span></div>
+      <div><strong>Ieteicamais vārīšanas laiks:</strong> <span id="adzika-tech-cook-time">25–30 minūtes</span></div>
+      <div><strong>Burciņu skaits (ap 400 ml):</strong> <span id="adzika-tech-jars">1 burciņa</span></div>
+    </div>
+  </details>
+</section>
