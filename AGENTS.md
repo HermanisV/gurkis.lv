@@ -87,9 +87,13 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
 
 ---
 
-## 5. Git Branching, Issue Awareness & Pull Request Delivery Policy
+## 5. Git Branching, GitHub MCP & Pull Request Delivery Policy
 
 - **`main` is strictly protected**: NEVER commit or push directly to `main`.
+- **GitHub MCP First Policy**:
+  - The repository's AI agents rely on the **GitHub MCP server** (`@modelcontextprotocol/server-github`) as the primary interface for inspecting issues, listing community requests, reading Utterances comments, and posting resolution updates.
+  - Development environments running Antigravity or compatible agent harnesses MUST configure the GitHub MCP server (see template in [`.agents/mcp_config.example.json`](.agents/mcp_config.example.json)).
+  - Helper PowerShell scripts (`get-github-issue.ps1`, `get-recipe-comments.ps1`) are provided strictly as secondary CLI fallbacks when working outside an MCP-enabled agent environment.
 - **Every new recipe, edit, or site feature MUST be delivered on a dedicated branch**:
   1. Sync with `main` before starting new work:
      ```powershell
@@ -109,21 +113,21 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
      git push -u origin <branch-name>
      ```
   4. Provide the branch name and the direct GitHub Pull Request creation URL (`https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`) in your response so the user can review and merge the PR.
-  5. **Issue Completion Comment & Closure Instructions**: Whenever a GitHub Issue `#N` has been implemented, prepare a ready-to-copy Latvian summary comment (starting with `[Ieviests]`, including what was done and the PR link) and explicitly instruct the user to paste the comment on `https://github.com/HermanisV/gurkis.lv/issues/<N>` and close the ticket.
+  5. **Issue Completion Comment & Closure Instructions**: Whenever a GitHub Issue `#N` has been implemented, prepare a ready-to-copy Latvian summary comment (starting with `[Ieviests]`, including what was done and the PR link) and explicitly instruct the user to paste the comment on `https://github.com/HermanisV/gurkis.lv/issues/<N>` and close the ticket (or post it directly via GitHub MCP `add_issue_comment` if requested).
 - **Automated Deployment**: Once a PR is merged into `main`, the GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) automatically validates all recipes, builds the Jekyll site, and deploys it to GitHub Pages.
 
 ---
 
 ## 6. Available Agent Skills & Orchestration
 
-- **Fetching & Investigating GitHub Issues (`fetch-issue`)**: Read and follow [.agents/skills/fetch-issue/SKILL.md](.agents/skills/fetch-issue/SKILL.md) (which runs `.agents/skills/fetch-issue/scripts/get-github-issue.ps1`) whenever the user provides a GitHub Issue URL (e.g., `https://github.com/HermanisV/gurkis.lv/issues/29`), an issue number (`#29`), or asks to investigate, analyze, or provide an implementation plan for a raised issue.
+- **Fetching & Investigating GitHub Issues (`fetch-issue`)**: Read and follow [.agents/skills/fetch-issue/SKILL.md](.agents/skills/fetch-issue/SKILL.md) (which uses GitHub MCP `get_issue` / `list_issues`, with `.agents/skills/fetch-issue/scripts/get-github-issue.ps1` as fallback) whenever the user provides a GitHub Issue URL (e.g., `https://github.com/HermanisV/gurkis.lv/issues/29`), an issue number (`#29`), or asks to investigate, analyze, or provide an implementation plan for a raised issue.
 - **Issue-Aware Development & Resolution (`work-on-issue`)**: Read and follow [.agents/skills/work-on-issue/SKILL.md](.agents/skills/work-on-issue/SKILL.md) whenever implementing changes for a specific GitHub Issue `#N` (either directly or after the user approves an implementation plan for Issue `#N`). Enforces `feat/<N>-<slug>` / `fix/<N>-<slug>` branch names, `(Closes #<N>)` commit messages, and preparing the ready-to-copy Latvian closure comment + user instructions.
 - **Adding New Recipes (`add-recipe`)**: Read and follow [.agents/skills/add-recipe/SKILL.md](.agents/skills/add-recipe/SKILL.md) when the user provides a new recipe via chat text, notes, images, or external web URLs.
 - **Updating Existing Recipes (`update-recipe`)**: Read and follow [.agents/skills/update-recipe/SKILL.md](.agents/skills/update-recipe/SKILL.md) when the user asks to update, refine, or create a new version of an existing recipe in `_recipes/*.md` using natural language instructions.
-- **Gathering Update Requirements from Page Comments (`gather-recipe-comments`)**: Read and follow [.agents/skills/gather-recipe-comments/SKILL.md](.agents/skills/gather-recipe-comments/SKILL.md) (which runs `.agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1`) when the user asks to check or gather improvement notes/comments left on a recipe page.
+- **Gathering Update Requirements from Page Comments (`gather-recipe-comments`)**: Read and follow [.agents/skills/gather-recipe-comments/SKILL.md](.agents/skills/gather-recipe-comments/SKILL.md) (which uses GitHub MCP `search_issues` for Utterances threads, with `.agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1` as fallback) when the user asks to check or gather improvement notes/comments left on a recipe page.
 - **Orchestrating Comment-Driven Recipe Updates**: When the user asks to update a recipe based on comments left on its page (e.g., *"update `<slug>` recipe to new version following all the recommendations I've left in the comments of the newest version"*), **orchestrate both skills in sequence**:
   1. Execute `gather-recipe-comments` first to fetch comments created since the newest commit version of `_recipes/<slug>.md` and synthesize actionable culinary requirements.
   2. Pass those requirements into `update-recipe` to update both the frontmatter `ingredients:` list and bolded inline instruction amounts (`**...**`), validate, and push a `fix/<slug>` branch with a descriptive Latvian commit message for the version history timeline.
-- **Processing Page Requests (`process-requests`)**: Read and follow [.agents/skills/process-requests/SKILL.md](.agents/skills/process-requests/SKILL.md) when the user asks to check or implement open requests submitted via the **"Pievienot ko jaunu"** (`/pievienot/`) page. Orchestrates with `fetch-issue` and `work-on-issue`.
+- **Processing Page Requests (`process-requests`)**: Read and follow [.agents/skills/process-requests/SKILL.md](.agents/skills/process-requests/SKILL.md) (using GitHub MCP `list_issues`) when the user asks to check or implement open requests submitted via the **"Pievienot ko jaunu"** (`/pievienot/`) page. Orchestrates with `fetch-issue` and `work-on-issue`.
 - **Maintaining the Site & Layouts (`maintain-site`)**: Read and follow [.agents/skills/maintain-site/SKILL.md](.agents/skills/maintain-site/SKILL.md) when modifying layouts, styles, search logic, or Jekyll configuration.
 

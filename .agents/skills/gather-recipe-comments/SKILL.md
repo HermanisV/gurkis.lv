@@ -22,17 +22,36 @@ Use this skill whenever the user asks to check, review, or apply recommendations
 
 ---
 
-## Step 2: Fetch Comments & Version Metadata via Helper Script
+## Step 2: Fetch Comments & Version Metadata
 
-1. Run the comment harvester script from the repository root:
-   - **To fetch only comments left since the newest commit version of the recipe** (default when user asks for comments on the newest version):
-     ```powershell
-     powershell -ExecutionPolicy Bypass -File .agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1 -Slug "<slug>" -OnlyNewestVersion
+### Primary Method: GitHub MCP Server (Recommended)
+
+When GitHub MCP is available, retrieve the recipe's Utterances comment thread directly:
+
+1. **Find Utterances Issue for Recipe**:
+   - Utterances stores comments as GitHub issues with title `receptes/<slug>`.
+   - Call MCP tool `search_issues` (`ServerName: "github"`, `ToolName: "search_issues"`):
+     ```json
+     {
+       "q": "repo:HermanisV/gurkis.lv is:issue in:title receptes/<slug>"
+     }
      ```
-   - **To fetch all historical comments across all versions** (when the user asks for all comments regardless of version):
-     ```powershell
-     powershell -ExecutionPolicy Bypass -File .agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1 -Slug "<slug>"
-     ```
+2. **Review Comments on the Issue**:
+   - Read the comments using the issue number found.
+   - Compare comment timestamps with the latest recipe commit (or git history) to identify comments left since the latest recipe update.
+
+### Fallback Method: Helper PowerShell Script
+
+If GitHub MCP is not active, run the comment harvester script from the repository root:
+
+- **To fetch only comments left since the newest commit version of the recipe** (default when user asks for comments on the newest version):
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1 -Slug "<slug>" -OnlyNewestVersion
+  ```
+- **To fetch all historical comments across all versions** (when the user asks for all comments regardless of version):
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .agents/skills/gather-recipe-comments/scripts/get-recipe-comments.ps1 -Slug "<slug>"
+  ```
 2. Review the script output:
    - `Latest Version`: Shows the current version number (`vN`), short commit SHA, and commit timestamp of `_recipes/<slug>.md` on `main`.
    - Each comment entry includes `[NEWEST VERSION]` or `[OLDER VERSION]`, author, timestamp, source URL, and the full comment text.

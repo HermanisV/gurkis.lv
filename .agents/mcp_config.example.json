@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Gurķis LV — GitHub MCP server configuration example for Antigravity / Claude Desktop / VS Code. Copy this to your global mcp_config.json (e.g. ~/.gemini/config/mcp_config.json) and replace <YOUR_GITHUB_TOKEN> with a GitHub Personal Access Token (PAT with repo / issues scope).",
+  "mcpServers": {
+    "github": {
+      "comment_windows": "On Windows, command should use cmd.exe /c npx to avoid spawn ENOENT errors",
+      "command": "cmd.exe",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "comment_unix": "On macOS / Linux, command can simply be 'npx' with args ['-y', '@modelcontextprotocol/server-github']",
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<YOUR_GITHUB_TOKEN>"
+      }
+    }
+  }
+}
