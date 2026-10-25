@@ -155,7 +155,10 @@
     const pizzaCalcEl = document.getElementById("pizza-calculator");
     const breadCalcEl = document.getElementById("bread-calculator");
     const srirachaCalcEl = document.getElementById("sriracha-calculator");
-    const hasCalculator = Boolean(pizzaCalcEl || breadCalcEl || srirachaCalcEl);
+    const adzikaCalcEl = document.getElementById("adzika-calculator");
+    const hasCalculator = Boolean(
+      pizzaCalcEl || breadCalcEl || srirachaCalcEl || adzikaCalcEl
+    );
     const titleEl = recipePage.querySelector(".recipe-title");
     const leadEl = recipePage.querySelector(".recipe-lead");
 
@@ -1569,6 +1572,330 @@
 
       // Initial calculation on page load
       recalculateSriracha();
+    } else if (adzikaCalcEl) {
+      // Adzika Sauce & Pepper Blend Calculator Mode
+      const ADZIKA_PRESETS = {
+        jar_classic: {
+          jalapeno_g: 50,
+          serrano_g: 0,
+          habanero_g: 0,
+          veg_ratio: 4.5,
+          garlic_pct: 30,
+          sugar_pct: 40,
+          salt_pct: 12,
+          vinegar_pct: 10
+        },
+        jar_spicy: {
+          jalapeno_g: 25,
+          serrano_g: 25,
+          habanero_g: 0,
+          veg_ratio: 4.5,
+          garlic_pct: 30,
+          sugar_pct: 40,
+          salt_pct: 12,
+          vinegar_pct: 10
+        },
+        jar_extra_hot: {
+          jalapeno_g: 20,
+          serrano_g: 20,
+          habanero_g: 10,
+          veg_ratio: 4.5,
+          garlic_pct: 30,
+          sugar_pct: 40,
+          salt_pct: 12,
+          vinegar_pct: 10
+        },
+        jar_custom: {
+          jalapeno_g: 50,
+          serrano_g: 50,
+          habanero_g: 20,
+          veg_ratio: 4.5,
+          garlic_pct: 30,
+          sugar_pct: 40,
+          salt_pct: 12,
+          vinegar_pct: 10
+        },
+        batch_tvnet: {
+          jalapeno_g: 500,
+          serrano_g: 0,
+          habanero_g: 0,
+          veg_ratio: 5.0,
+          garlic_pct: 30,
+          sugar_pct: 40,
+          salt_pct: 12,
+          vinegar_pct: 10
+        }
+      };
+
+      let presetBaseJalapeno = 50;
+      let presetBaseSerrano = 0;
+      let presetBaseHabanero = 0;
+
+      const elJalapeno = document.getElementById("adzika-jalapeno");
+      const elJalapenoRange = document.getElementById("adzika-jalapeno-range");
+      const elSerrano = document.getElementById("adzika-serrano");
+      const elSerranoRange = document.getElementById("adzika-serrano-range");
+      const elHabanero = document.getElementById("adzika-habanero");
+      const elHabaneroRange = document.getElementById("adzika-habanero-range");
+
+      const elVegRatio = document.getElementById("adzika-veg-ratio");
+      const elVegRatioRange = document.getElementById("adzika-veg-ratio-range");
+      const elGarlicPct = document.getElementById("adzika-garlic-pct");
+      const elGarlicPctRange = document.getElementById("adzika-garlic-pct-range");
+      const elSugarPct = document.getElementById("adzika-sugar-pct");
+      const elSugarPctRange = document.getElementById("adzika-sugar-pct-range");
+      const elSaltPct = document.getElementById("adzika-salt-pct");
+      const elSaltPctRange = document.getElementById("adzika-salt-pct-range");
+      const elVinegarPct = document.getElementById("adzika-vinegar-pct");
+      const elVinegarPctRange = document.getElementById("adzika-vinegar-pct-range");
+
+      const presetBtns = adzikaCalcEl.querySelectorAll(".calc-preset-btn");
+
+      function clampAdzikaNum(val, min, max, fallback) {
+        const n = parseFloat(val);
+        if (isNaN(n)) return fallback;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function setAdzikaText(id, text) {
+        const node = document.getElementById(id);
+        if (node) node.textContent = text;
+      }
+
+      function recalculateAdzika() {
+        const W_jalapeno = clampAdzikaNum(elJalapeno ? elJalapeno.value : 50, 0, 5000, 50);
+        const W_serrano = clampAdzikaNum(elSerrano ? elSerrano.value : 0, 0, 5000, 0);
+        const W_habanero = clampAdzikaNum(elHabanero ? elHabanero.value : 0, 0, 2000, 0);
+
+        const veg_ratio = clampAdzikaNum(elVegRatio ? elVegRatio.value : 4.5, 1.0, 15.0, 4.5);
+        const garlic_pct = clampAdzikaNum(elGarlicPct ? elGarlicPct.value : 30, 5, 100, 30);
+        const sugar_pct = clampAdzikaNum(elSugarPct ? elSugarPct.value : 40, 5, 120, 40);
+        const salt_pct = clampAdzikaNum(elSaltPct ? elSaltPct.value : 12, 3, 40, 12);
+        const vinegar_pct = clampAdzikaNum(elVinegarPct ? elVinegarPct.value : 10, 2, 50, 10);
+
+        const W_chili_raw = W_jalapeno + W_serrano + W_habanero;
+        const W_chili = Math.max(1, W_chili_raw);
+
+        const jala_pct = (W_jalapeno / W_chili) * 100;
+        const serr_pct = (W_serrano / W_chili) * 100;
+        const haba_pct = (W_habanero / W_chili) * 100;
+
+        setAdzikaText("adzika-jalapeno-badge", `${Math.round(W_jalapeno)} g (${Math.round(jala_pct)}%)`);
+        setAdzikaText("adzika-serrano-badge", `${Math.round(W_serrano)} g (${Math.round(serr_pct)}%)`);
+        setAdzikaText("adzika-habanero-badge", `${Math.round(W_habanero)} g (${Math.round(haba_pct)}%)`);
+
+        // Base veggies: Tomatoes & Sweet Paprika
+        const W_tomatoes = Math.round(W_chili * veg_ratio);
+        const W_paprika = Math.round(W_chili * veg_ratio);
+        const W_total_veggies = Math.round(W_chili + W_tomatoes + W_paprika);
+
+        setAdzikaText("adzika-veg-ratio-badge", `${veg_ratio.toFixed(1)}× (pa ${W_tomatoes} g)`);
+        setAdzikaText("adzika-garlic-pct-badge", `${garlic_pct.toFixed(0)}%`);
+        setAdzikaText("adzika-sugar-pct-badge", `${sugar_pct.toFixed(0)}%`);
+        setAdzikaText("adzika-salt-pct-badge", `${salt_pct.toFixed(0)}%`);
+        setAdzikaText("adzika-vinegar-pct-badge", `${vinegar_pct.toFixed(0)}%`);
+
+        // Seasonings
+        const W_garlic = Math.round((W_chili * garlic_pct) / 100);
+        const W_sugar = Math.round((W_chili * sugar_pct) / 100);
+        const W_salt = Math.round(((W_chili * salt_pct) / 100) * 2) / 2;
+        const V_vinegar = Math.round((W_chili * vinegar_pct) / 100);
+        const W_herbs = Math.max(3, Math.round(W_chili * 0.10));
+
+        // Yield estimate: cooked down mass is ~80% of total raw vegetables
+        const yield_ml = Math.max(50, Math.round(W_total_veggies * 0.80));
+        const jars_count = Math.max(1, Math.round((yield_ml / 400) * 10) / 10);
+        const jars_str = jars_count === 1 ? "1 burciņa" : `${jars_count} burciņas`;
+
+        // Garlic cloves (~4g per clove)
+        const garlic_cloves = Math.max(1, Math.round(W_garlic / 4));
+
+        // Estimated Scoville Heat in finished sauce:
+        const chili_avg_shu = (W_jalapeno * 5000 + W_serrano * 15000 + W_habanero * 200000) / W_chili;
+        const sauce_shu = Math.round(chili_avg_shu * (W_chili / W_total_veggies));
+
+        let heatLabel = "";
+        if (sauce_shu < 800) {
+          heatLabel = `🟢 Mērens (~${sauce_shu.toLocaleString()} SHU)`;
+        } else if (sauce_shu < 2500) {
+          heatLabel = `🟡 Vidēji ass (~${sauce_shu.toLocaleString()} SHU)`;
+        } else if (sauce_shu < 8000) {
+          heatLabel = `🟠 Ļoti ass (~${sauce_shu.toLocaleString()} SHU)`;
+        } else {
+          heatLabel = `🔴 🔥 Ugunīgs (~${sauce_shu.toLocaleString()} SHU)`;
+        }
+
+        const cookTimeStr = W_total_veggies > 2000 ? "45–60 minūtes" : "20–25 minūtes";
+
+        // Update Summary Bar
+        setAdzikaText("adzika-out-total-peppers", `${Math.round(W_chili)} g`);
+        setAdzikaText("adzika-out-heat", heatLabel);
+        setAdzikaText("adzika-out-total-veggies", `${W_total_veggies} g`);
+        setAdzikaText("adzika-out-yield", `~${yield_ml} ml (${jars_str})`);
+
+        // Update Technical Details
+        setAdzikaText(
+          "adzika-tech-split",
+          `${Math.round(W_jalapeno)} g (${Math.round(jala_pct)}%) / ${Math.round(W_serrano)} g (${Math.round(serr_pct)}%) / ${Math.round(W_habanero)} g (${Math.round(haba_pct)}%)`
+        );
+        setAdzikaText("adzika-tech-shu", `~${sauce_shu.toLocaleString()} SHU (${heatLabel})`);
+        setAdzikaText("adzika-tech-tom-pap", `${W_tomatoes} g / ${W_paprika} g`);
+        setAdzikaText("adzika-tech-garlic", `${W_garlic} g (~${garlic_cloves} daiv.)`);
+        setAdzikaText("adzika-tech-sugar", `${W_sugar} g`);
+        setAdzikaText("adzika-tech-salt", `${W_salt} g`);
+        setAdzikaText("adzika-tech-vinegar", `${V_vinegar} ml`);
+        setAdzikaText("adzika-tech-herbs", `${W_herbs} g`);
+        setAdzikaText("adzika-tech-cook-time", cookTimeStr);
+        setAdzikaText("adzika-tech-jars", jars_str);
+
+        // Update recipe meta servings display
+        if (servingsEl) {
+          servingsEl.textContent = `~${yield_ml} ml (${jars_str})`;
+        }
+
+        // Update Ingredients List panel
+        const ingredientMap = {
+          chili_jalapeno: { val: W_jalapeno, text: `${Math.round(W_jalapeno)} g`, isPepper: true },
+          chili_serrano: { val: W_serrano, text: `${Math.round(W_serrano)} g`, isPepper: true },
+          chili_habanero: { val: W_habanero, text: `${Math.round(W_habanero)} g`, isPepper: true },
+          adzika_tomatoes: { val: W_tomatoes, text: `${W_tomatoes} g` },
+          adzika_paprika: { val: W_paprika, text: `${W_paprika} g` },
+          adzika_garlic: { val: W_garlic, text: `${W_garlic} g (~${garlic_cloves} daiv.)` },
+          adzika_sugar: { val: W_sugar, text: `${W_sugar} g` },
+          adzika_salt: { val: W_salt, text: `${W_salt} g` },
+          adzika_vinegar: { val: V_vinegar, text: `${V_vinegar} ml` },
+          adzika_herbs: { val: W_herbs, text: `${W_herbs} g` }
+        };
+
+        Object.keys(ingredientMap).forEach((key) => {
+          const cfg = ingredientMap[key];
+          const amountNode = recipePage.querySelector(`[data-calc-amount="${key}"]`);
+          const rowNode = recipePage.querySelector(`[data-calc-row="${key}"]`);
+          if (amountNode) {
+            amountNode.textContent = cfg.text;
+            amountNode.dataset.baseAmount = cfg.text;
+          }
+          if (rowNode && cfg.isPepper) {
+            rowNode.classList.toggle("ingredient-unused", cfg.val < 0.5);
+          }
+        });
+
+        // Dynamic chili breakdown description for instructions
+        const pepperParts = [];
+        if (W_jalapeno >= 0.5) pepperParts.push(`**${Math.round(W_jalapeno)} g** sarkano halapenjo`);
+        if (W_serrano >= 0.5) pepperParts.push(`**${Math.round(W_serrano)} g** sarkano serrano`);
+        if (W_habanero >= 0.5) pepperParts.push(`**${Math.round(W_habanero)} g** habanero`);
+        const breakdownText = pepperParts.length > 0 ? pepperParts.join(", ") : `**${Math.round(W_chili)} g** čili`;
+
+        // Update Inline Instruction Amounts
+        const inlineValues = {
+          chili_breakdown: breakdownText,
+          chili_total: `${Math.round(W_chili)} g`,
+          adzika_tomatoes: `${W_tomatoes} g`,
+          adzika_paprika: `${W_paprika} g`,
+          adzika_garlic: `${W_garlic} g (${garlic_cloves} daiv.)`,
+          adzika_sugar: `${W_sugar} g`,
+          adzika_salt: `${W_salt} g`,
+          adzika_vinegar: `${V_vinegar} ml`,
+          adzika_herbs: `${W_herbs} g`,
+          adzika_yield: `${yield_ml} ml`
+        };
+
+        Object.keys(inlineValues).forEach((key) => {
+          recipePage.querySelectorAll(`[data-calc-inline="${key}"]`).forEach((el) => {
+            el.innerHTML = inlineValues[key];
+          });
+        });
+      }
+
+      function bindAdzikaRangeAndNumber(rangeEl, numEl) {
+        if (!rangeEl || !numEl) return;
+        rangeEl.addEventListener("input", () => {
+          numEl.value = rangeEl.value;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateAdzika();
+        });
+        numEl.addEventListener("input", () => {
+          rangeEl.value = numEl.value;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateAdzika();
+        });
+      }
+
+      bindAdzikaRangeAndNumber(elJalapenoRange, elJalapeno);
+      bindAdzikaRangeAndNumber(elSerranoRange, elSerrano);
+      bindAdzikaRangeAndNumber(elHabaneroRange, elHabanero);
+      bindAdzikaRangeAndNumber(elVegRatioRange, elVegRatio);
+      bindAdzikaRangeAndNumber(elGarlicPctRange, elGarlicPct);
+      bindAdzikaRangeAndNumber(elSugarPctRange, elSugarPct);
+      bindAdzikaRangeAndNumber(elSaltPctRange, elSaltPct);
+      bindAdzikaRangeAndNumber(elVinegarPctRange, elVinegarPct);
+
+      // Preset buttons
+      presetBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.preset;
+          const p = ADZIKA_PRESETS[key];
+          if (!p) return;
+
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          presetBaseJalapeno = p.jalapeno_g;
+          presetBaseSerrano = p.serrano_g;
+          presetBaseHabanero = p.habanero_g;
+
+          if (elJalapeno) elJalapeno.value = p.jalapeno_g;
+          if (elJalapenoRange) elJalapenoRange.value = p.jalapeno_g;
+          if (elSerrano) elSerrano.value = p.serrano_g;
+          if (elSerranoRange) elSerranoRange.value = p.serrano_g;
+          if (elHabanero) elHabanero.value = p.habanero_g;
+          if (elHabaneroRange) elHabaneroRange.value = p.habanero_g;
+
+          if (elVegRatio) elVegRatio.value = p.veg_ratio;
+          if (elVegRatioRange) elVegRatioRange.value = p.veg_ratio;
+          if (elGarlicPct) elGarlicPct.value = p.garlic_pct;
+          if (elGarlicPctRange) elGarlicPctRange.value = p.garlic_pct;
+          if (elSugarPct) elSugarPct.value = p.sugar_pct;
+          if (elSugarPctRange) elSugarPctRange.value = p.sugar_pct;
+          if (elSaltPct) elSaltPct.value = p.salt_pct;
+          if (elSaltPctRange) elSaltPctRange.value = p.salt_pct;
+          if (elVinegarPct) elVinegarPct.value = p.vinegar_pct;
+          if (elVinegarPctRange) elVinegarPctRange.value = p.vinegar_pct;
+
+          scaleBtns.forEach((b) => b.classList.toggle("active", b.dataset.scale === "1"));
+          recalculateAdzika();
+        });
+      });
+
+      // Connect portion scale buttons (0.5x, 1x, 2x, 3x)
+      scaleBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const factor = parseFloat(btn.dataset.scale) || 1;
+          scaleBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          if (elJalapeno) {
+            const v = Math.round(presetBaseJalapeno * factor);
+            elJalapeno.value = v;
+            if (elJalapenoRange) elJalapenoRange.value = v;
+          }
+          if (elSerrano) {
+            const v = Math.round(presetBaseSerrano * factor);
+            elSerrano.value = v;
+            if (elSerranoRange) elSerranoRange.value = v;
+          }
+          if (elHabanero) {
+            const v = Math.round(presetBaseHabanero * factor);
+            elHabanero.value = v;
+            if (elHabaneroRange) elHabaneroRange.value = v;
+          }
+          recalculateAdzika();
+        });
+      });
+
+      // Initial calculation on page load
+      recalculateAdzika();
     } else {
       // Standard Recipe Portion Scaling
       scaleBtns.forEach((btn) => {
