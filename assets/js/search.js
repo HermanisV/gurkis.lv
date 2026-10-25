@@ -154,7 +154,8 @@
     const instructionEl = document.getElementById("recipe-instructions");
     const pizzaCalcEl = document.getElementById("pizza-calculator");
     const breadCalcEl = document.getElementById("bread-calculator");
-    const hasCalculator = Boolean(pizzaCalcEl || breadCalcEl);
+    const srirachaCalcEl = document.getElementById("sriracha-calculator");
+    const hasCalculator = Boolean(pizzaCalcEl || breadCalcEl || srirachaCalcEl);
     const titleEl = recipePage.querySelector(".recipe-title");
     const leadEl = recipePage.querySelector(".recipe-lead");
 
@@ -1270,6 +1271,304 @@
 
       // Initial calculation on page load
       recalculateBreadDough();
+    } else if (srirachaCalcEl) {
+      // Sriracha Sauce & Pepper Blend Calculator Mode
+      const SRIRACHA_PRESETS = {
+        classic: {
+          jalapeno_g: 680,
+          serrano_g: 0,
+          habanero_g: 0,
+          salt_pct: 2.2,
+          sugar_pct: 7.4,
+          garlic_pct: 3.5,
+          vinegar_pct: 17.6
+        },
+        medium_kick: {
+          jalapeno_g: 400,
+          serrano_g: 200,
+          habanero_g: 20,
+          salt_pct: 2.2,
+          sugar_pct: 7.4,
+          garlic_pct: 3.5,
+          vinegar_pct: 17.6
+        },
+        extra_hot: {
+          jalapeno_g: 200,
+          serrano_g: 150,
+          habanero_g: 50,
+          salt_pct: 2.2,
+          sugar_pct: 7.4,
+          garlic_pct: 3.5,
+          vinegar_pct: 17.6
+        },
+        small_batch: {
+          jalapeno_g: 50,
+          serrano_g: 50,
+          habanero_g: 20,
+          salt_pct: 2.2,
+          sugar_pct: 7.4,
+          garlic_pct: 3.5,
+          vinegar_pct: 17.6
+        }
+      };
+
+      let presetBaseJalapeno = 680;
+      let presetBaseSerrano = 0;
+      let presetBaseHabanero = 0;
+
+      const elJalapeno = document.getElementById("sriracha-jalapeno");
+      const elJalapenoRange = document.getElementById("sriracha-jalapeno-range");
+      const elSerrano = document.getElementById("sriracha-serrano");
+      const elSerranoRange = document.getElementById("sriracha-serrano-range");
+      const elHabanero = document.getElementById("sriracha-habanero");
+      const elHabaneroRange = document.getElementById("sriracha-habanero-range");
+
+      const elSaltPct = document.getElementById("sriracha-salt-pct");
+      const elSaltPctRange = document.getElementById("sriracha-salt-pct-range");
+      const elSugarPct = document.getElementById("sriracha-sugar-pct");
+      const elSugarPctRange = document.getElementById("sriracha-sugar-pct-range");
+      const elGarlicPct = document.getElementById("sriracha-garlic-pct");
+      const elGarlicPctRange = document.getElementById("sriracha-garlic-pct-range");
+      const elVinegarPct = document.getElementById("sriracha-vinegar-pct");
+      const elVinegarPctRange = document.getElementById("sriracha-vinegar-pct-range");
+
+      const presetBtns = srirachaCalcEl.querySelectorAll(".calc-preset-btn");
+
+      function clampSrirachaNum(val, min, max, fallback) {
+        const n = parseFloat(val);
+        if (isNaN(n)) return fallback;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function setSrirachaText(id, text) {
+        const node = document.getElementById(id);
+        if (node) node.textContent = text;
+      }
+
+      function recalculateSriracha() {
+        const W_jalapeno = clampSrirachaNum(elJalapeno ? elJalapeno.value : 680, 0, 5000, 680);
+        const W_serrano = clampSrirachaNum(elSerrano ? elSerrano.value : 0, 0, 5000, 0);
+        const W_habanero = clampSrirachaNum(elHabanero ? elHabanero.value : 0, 0, 2000, 0);
+
+        const salt_pct = clampSrirachaNum(elSaltPct ? elSaltPct.value : 2.2, 1.0, 6.0, 2.2);
+        const sugar_pct = clampSrirachaNum(elSugarPct ? elSugarPct.value : 7.4, 1.0, 25.0, 7.4);
+        const garlic_pct = clampSrirachaNum(elGarlicPct ? elGarlicPct.value : 3.5, 0.5, 20.0, 3.5);
+        const vinegar_pct = clampSrirachaNum(elVinegarPct ? elVinegarPct.value : 17.6, 5.0, 50.0, 17.6);
+
+        // Update badges
+        const W_peppers_raw = W_jalapeno + W_serrano + W_habanero;
+        const W_peppers = Math.max(1, W_peppers_raw);
+
+        const jala_pct = (W_jalapeno / W_peppers) * 100;
+        const serr_pct = (W_serrano / W_peppers) * 100;
+        const haba_pct = (W_habanero / W_peppers) * 100;
+
+        setSrirachaText("sriracha-jalapeno-badge", `${Math.round(W_jalapeno)} g (${Math.round(jala_pct)}%)`);
+        setSrirachaText("sriracha-serrano-badge", `${Math.round(W_serrano)} g (${Math.round(serr_pct)}%)`);
+        setSrirachaText("sriracha-habanero-badge", `${Math.round(W_habanero)} g (${Math.round(haba_pct)}%)`);
+
+        setSrirachaText("sriracha-salt-pct-badge", `${salt_pct.toFixed(1)}%`);
+        setSrirachaText("sriracha-sugar-pct-badge", `${sugar_pct.toFixed(1)}%`);
+        setSrirachaText("sriracha-garlic-pct-badge", `${garlic_pct.toFixed(1)}%`);
+        setSrirachaText("sriracha-vinegar-pct-badge", `${vinegar_pct.toFixed(1)}%`);
+
+        // Ingredients calculation based on total pepper weight
+        const W_salt = (W_peppers * salt_pct) / 100;
+        const W_sugar = (W_peppers * sugar_pct) / 100;
+        const W_garlic = (W_peppers * garlic_pct) / 100;
+        const V_vinegar = (W_peppers * vinegar_pct) / 100;
+
+        // Yield estimate: ~56% of pepper weight
+        const yield_ml = Math.max(20, Math.round(W_peppers * 0.56));
+        const yield_bottles = (yield_ml / 350).toFixed(1);
+
+        // Estimated Scoville Heat
+        const avg_shu = Math.round(
+          (W_jalapeno * 5000 + W_serrano * 15000 + W_habanero * 200000) / W_peppers
+        );
+
+        let heatLabel = "";
+        if (avg_shu < 7000) {
+          heatLabel = `🟢 Mērens / Klasisks (~${avg_shu.toLocaleString()} SHU)`;
+        } else if (avg_shu < 18000) {
+          heatLabel = `🟡 Vidēji ass (~${avg_shu.toLocaleString()} SHU)`;
+        } else if (avg_shu < 45000) {
+          heatLabel = `🟠 Ļoti ass (~${avg_shu.toLocaleString()} SHU)`;
+        } else {
+          heatLabel = `🔴 🔥 Ugunīgs (~${avg_shu.toLocaleString()} SHU)`;
+        }
+
+        // Garlic cloves: roughly 4 g per clove
+        const garlic_cloves = Math.max(1, Math.round(W_garlic / 4));
+
+        // Format helpers
+        const formatG = (val, stepHalf) => {
+          if (stepHalf) {
+            const r = Math.round(val * 2) / 2;
+            return r % 1 === 0 ? `${r.toFixed(0)} g` : `${r.toFixed(1)} g`;
+          }
+          return `${Math.round(val)} g`;
+        };
+        const formatMl = (val) => `${Math.round(val)} ml`;
+
+        // Update Summary Bar
+        setSrirachaText("sriracha-out-total-peppers", `${Math.round(W_peppers)} g`);
+        setSrirachaText("sriracha-out-heat", heatLabel);
+        setSrirachaText("sriracha-out-salt", `${formatG(W_salt, true)} (${salt_pct.toFixed(1)}%)`);
+        setSrirachaText("sriracha-out-yield", `~${yield_ml} ml (${yield_bottles} pud.)`);
+
+        // Update Technical Details
+        setSrirachaText(
+          "sriracha-tech-split",
+          `${Math.round(W_jalapeno)} g (${Math.round(jala_pct)}%) / ${Math.round(W_serrano)} g (${Math.round(serr_pct)}%) / ${Math.round(W_habanero)} g (${Math.round(haba_pct)}%)`
+        );
+        setSrirachaText("sriracha-tech-shu", `~${avg_shu.toLocaleString()} SHU (${heatLabel})`);
+        setSrirachaText("sriracha-tech-peppers", `${W_peppers.toFixed(1)} g`);
+        setSrirachaText("sriracha-tech-salt", `${W_salt.toFixed(1)} g (${salt_pct.toFixed(2)}%)`);
+        setSrirachaText("sriracha-tech-sugar", `${W_sugar.toFixed(1)} g (${sugar_pct.toFixed(2)}%)`);
+        setSrirachaText("sriracha-tech-garlic", `${W_garlic.toFixed(1)} g (~${garlic_cloves} daiv.)`);
+        setSrirachaText("sriracha-tech-vinegar", `${V_vinegar.toFixed(1)} ml (${vinegar_pct.toFixed(2)}%)`);
+        setSrirachaText("sriracha-tech-yield", `~${yield_ml} ml`);
+
+        // Update recipe meta servings display
+        if (servingsEl) {
+          servingsEl.textContent = `~${yield_ml} ml (${yield_bottles} pud.)`;
+        }
+
+        // Update Ingredients List panel
+        const ingredientMap = {
+          peppers_jalapeno: { val: W_jalapeno, text: `${Math.round(W_jalapeno)} g`, isPepper: true },
+          peppers_serrano: { val: W_serrano, text: `${Math.round(W_serrano)} g`, isPepper: true },
+          peppers_habanero: { val: W_habanero, text: `${Math.round(W_habanero)} g`, isPepper: true },
+          sriracha_salt: { val: W_salt, text: formatG(W_salt, true) },
+          sriracha_sugar: { val: W_sugar, text: formatG(W_sugar, false) },
+          sriracha_garlic: { val: W_garlic, text: `${formatG(W_garlic, false)} (~${garlic_cloves} daiv.)` },
+          sriracha_vinegar: { val: V_vinegar, text: formatMl(V_vinegar) }
+        };
+
+        Object.keys(ingredientMap).forEach((key) => {
+          const cfg = ingredientMap[key];
+          const amountNode = recipePage.querySelector(`[data-calc-amount="${key}"]`);
+          const rowNode = recipePage.querySelector(`[data-calc-row="${key}"]`);
+          if (amountNode) {
+            amountNode.textContent = cfg.text;
+            amountNode.dataset.baseAmount = cfg.text;
+          }
+          if (rowNode && cfg.isPepper) {
+            rowNode.classList.toggle("ingredient-unused", cfg.val < 0.5);
+          }
+        });
+
+        // Dynamic pepper breakdown description for instructions
+        const pepperParts = [];
+        if (W_jalapeno >= 0.5) pepperParts.push(`**${Math.round(W_jalapeno)} g** sarkano halapenjo`);
+        if (W_serrano >= 0.5) pepperParts.push(`**${Math.round(W_serrano)} g** sarkano serrano`);
+        if (W_habanero >= 0.5) pepperParts.push(`**${Math.round(W_habanero)} g** habanero`);
+        const breakdownText = pepperParts.length > 0 ? pepperParts.join(", ") : `**${Math.round(W_peppers)} g** čili`;
+
+        // Update Inline Instruction Amounts
+        const inlineValues = {
+          peppers_breakdown: breakdownText,
+          peppers_total: `${Math.round(W_peppers)} g`,
+          sriracha_garlic: `${formatG(W_garlic, false)} (${garlic_cloves} daiv.)`,
+          sriracha_sugar: formatG(W_sugar, false),
+          sriracha_salt: formatG(W_salt, true),
+          sriracha_vinegar: formatMl(V_vinegar),
+          sriracha_yield: `${yield_ml} ml`
+        };
+
+        Object.keys(inlineValues).forEach((key) => {
+          recipePage.querySelectorAll(`[data-calc-inline="${key}"]`).forEach((el) => {
+            el.innerHTML = inlineValues[key];
+          });
+        });
+      }
+
+      function bindSrirachaRangeAndNumber(rangeEl, numEl) {
+        if (!rangeEl || !numEl) return;
+        rangeEl.addEventListener("input", () => {
+          numEl.value = rangeEl.value;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateSriracha();
+        });
+        numEl.addEventListener("input", () => {
+          rangeEl.value = numEl.value;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          recalculateSriracha();
+        });
+      }
+
+      bindSrirachaRangeAndNumber(elJalapenoRange, elJalapeno);
+      bindSrirachaRangeAndNumber(elSerranoRange, elSerrano);
+      bindSrirachaRangeAndNumber(elHabaneroRange, elHabanero);
+      bindSrirachaRangeAndNumber(elSaltPctRange, elSaltPct);
+      bindSrirachaRangeAndNumber(elSugarPctRange, elSugarPct);
+      bindSrirachaRangeAndNumber(elGarlicPctRange, elGarlicPct);
+      bindSrirachaRangeAndNumber(elVinegarPctRange, elVinegarPct);
+
+      // Preset buttons
+      presetBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.preset;
+          const p = SRIRACHA_PRESETS[key];
+          if (!p) return;
+
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          presetBaseJalapeno = p.jalapeno_g;
+          presetBaseSerrano = p.serrano_g;
+          presetBaseHabanero = p.habanero_g;
+
+          if (elJalapeno) elJalapeno.value = p.jalapeno_g;
+          if (elJalapenoRange) elJalapenoRange.value = p.jalapeno_g;
+          if (elSerrano) elSerrano.value = p.serrano_g;
+          if (elSerranoRange) elSerranoRange.value = p.serrano_g;
+          if (elHabanero) elHabanero.value = p.habanero_g;
+          if (elHabaneroRange) elHabaneroRange.value = p.habanero_g;
+
+          if (elSaltPct) elSaltPct.value = p.salt_pct;
+          if (elSaltPctRange) elSaltPctRange.value = p.salt_pct;
+          if (elSugarPct) elSugarPct.value = p.sugar_pct;
+          if (elSugarPctRange) elSugarPctRange.value = p.sugar_pct;
+          if (elGarlicPct) elGarlicPct.value = p.garlic_pct;
+          if (elGarlicPctRange) elGarlicPctRange.value = p.garlic_pct;
+          if (elVinegarPct) elVinegarPct.value = p.vinegar_pct;
+          if (elVinegarPctRange) elVinegarPctRange.value = p.vinegar_pct;
+
+          scaleBtns.forEach((b) => b.classList.toggle("active", b.dataset.scale === "1"));
+          recalculateSriracha();
+        });
+      });
+
+      // Connect portion scale buttons (0.5x, 1x, 2x, 3x) to scale current pepper amounts
+      scaleBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const factor = parseFloat(btn.dataset.scale) || 1;
+          scaleBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          if (elJalapeno) {
+            const v = Math.round(presetBaseJalapeno * factor);
+            elJalapeno.value = v;
+            if (elJalapenoRange) elJalapenoRange.value = v;
+          }
+          if (elSerrano) {
+            const v = Math.round(presetBaseSerrano * factor);
+            elSerrano.value = v;
+            if (elSerranoRange) elSerranoRange.value = v;
+          }
+          if (elHabanero) {
+            const v = Math.round(presetBaseHabanero * factor);
+            elHabanero.value = v;
+            if (elHabaneroRange) elHabaneroRange.value = v;
+          }
+          recalculateSriracha();
+        });
+      });
+
+      // Initial calculation on page load
+      recalculateSriracha();
     } else {
       // Standard Recipe Portion Scaling
       scaleBtns.forEach((btn) => {
