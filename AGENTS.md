@@ -72,6 +72,15 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
    - The cook must NEVER have to scroll back and forth between the instructions and the ingredient list to check how much of an ingredient to add.
    - If an ingredient is divided across multiple steps, state the total in the `ingredients` list and state the exact portion used in each respective instruction step (e.g., `Pievieno pusi (**250 ml**) piena...` and later `Iemaisa atlikušos **250 ml** piena...`).
 
+3. **Images & Recipe Media Policy**
+   - **Strict Rule for URL-sourced recipes**: When a recipe is imported or linked from an external web URL (`source_url`), **do NOT automatically download or include images from that website**, unless explicitly requested by the user in the issue/ticket or in the chat session.
+   - **Recipe Image Storage & Paths**:
+     - Store local recipe images in `assets/images/recipes/<slug>/` (e.g., `cover.jpg`, `solis-1.jpg`).
+     - Cover image: specify in YAML frontmatter via `image: "/assets/images/recipes/<slug>/cover.jpg"`.
+     - Step thumbnails: include inside the markdown instruction step as `![Apraksts](/assets/images/recipes/<slug>/solis-1.jpg)`.
+     - In recipe cards (`index.html`), a compact thumbnail is displayed automatically if `recipe.image` is set.
+     - In instructions (`_layouts/recipe.html`), step thumbnails are clickable and expand into a lightbox view without affecting the step completion checklist.
+
 ---
 
 ## 4. Repository Architecture (Jekyll on GitHub Pages)

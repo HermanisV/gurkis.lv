@@ -242,6 +242,32 @@ body {
   border-color: #c5d6c9;
 }
 
+.recipe-card.has-thumbnail {
+  padding-top: 0;
+  overflow: hidden;
+}
+
+.card-thumb-wrap {
+  margin: 0 -1.35rem 1rem -1.35rem;
+  height: 160px;
+  overflow: hidden;
+  background-color: #f0ede6;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+}
+
+.card-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.recipe-card:hover .card-thumbnail {
+  transform: scale(1.04);
+}
+
 .card-categories {
   display: flex;
   flex-wrap: wrap;
@@ -370,6 +396,31 @@ body {
   margin: 0 0 0.6rem;
   font-size: 2rem;
   line-height: 1.25;
+}
+
+.recipe-hero-image-wrap {
+  width: 100%;
+  max-height: 380px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: 1rem 0 1.25rem 0;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  background-color: #f0ede6;
+  cursor: zoom-in;
+}
+
+.recipe-hero-image {
+  width: 100%;
+  height: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.recipe-hero-image:hover {
+  transform: scale(1.01);
 }
 
 .recipe-lead {
@@ -623,6 +674,34 @@ body {
   text-decoration: line-through;
   color: var(--text-muted);
   opacity: 0.65;
+}
+
+.recipe-content ol li img,
+.recipe-content ol li .step-thumbnail {
+  display: block;
+  margin: 0.6rem 0 0.35rem 0;
+  max-width: 140px;
+  max-height: 95px;
+  width: auto;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  cursor: zoom-in;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.recipe-content ol li img:hover,
+.recipe-content ol li .step-thumbnail:hover {
+  transform: scale(1.04);
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.recipe-content ol li.step-done img,
+.recipe-content ol li.step-done .step-thumbnail {
+  opacity: 0.6;
 }
 
 .ingredient-row.ingredient-unused {
@@ -1811,6 +1890,138 @@ body {
 
 .request-item-link:hover {
   text-decoration: underline;
+}
+
+/* Lightbox modal for enlarged image views */
+body.lightbox-open {
+  overflow: hidden;
+}
+
+.recipe-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.recipe-lightbox[hidden] {
+  display: none !important;
+}
+
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 19, 0.82);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.lightbox-dialog {
+  position: relative;
+  z-index: 2;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lightbox-close-btn {
+  position: absolute;
+  top: -2.8rem;
+  right: -0.5rem;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 2.2rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.lightbox-close-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.lightbox-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: #1a241e;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#lightbox-img {
+  max-width: 86vw;
+  max-height: 78vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.lightbox-caption {
+  margin: 0;
+  padding: 0.65rem 1rem;
+  color: #e2e8e4;
+  font-size: 0.88rem;
+  text-align: center;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.lightbox-caption[hidden] {
+  display: none !important;
+}
+
+/* Comments thumbnail and actions */
+.comments-header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.btn-add-photo {
+  font-size: 0.82rem;
+}
+
+.comment-images-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.comment-image-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0;
+  overflow: hidden;
+  cursor: zoom-in;
+  line-height: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.comment-image-btn:hover {
+  transform: scale(1.04);
+  border-color: var(--brand-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.comment-thumbnail {
+  width: 90px;
+  height: 65px;
+  object-fit: cover;
+  display: block;
 }
 
 .site-footer {

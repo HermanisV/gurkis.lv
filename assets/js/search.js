@@ -161,9 +161,61 @@
     let amountEls = [];
     let inlineAmountEls = [];
 
+    // Lightbox modal setup
+    const lightboxModal = document.getElementById("recipe-image-lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+    const lightboxCaption = document.getElementById("lightbox-caption");
+    const lightboxCloseBtn = document.getElementById("lightbox-close-btn");
+    const lightboxBackdrop = lightboxModal
+      ? lightboxModal.querySelector(".lightbox-backdrop")
+      : null;
+
+    function openLightbox(src, alt) {
+      if (!lightboxModal || !lightboxImg) return;
+      lightboxImg.src = src;
+      lightboxImg.alt = alt || "";
+      if (lightboxCaption) {
+        lightboxCaption.textContent = alt || "";
+        lightboxCaption.hidden = !alt;
+      }
+      lightboxModal.hidden = false;
+      document.body.classList.add("lightbox-open");
+    }
+
+    function closeLightbox() {
+      if (!lightboxModal) return;
+      lightboxModal.hidden = true;
+      if (lightboxImg) lightboxImg.src = "";
+      document.body.classList.remove("lightbox-open");
+    }
+
+    if (lightboxModal) {
+      if (lightboxCloseBtn) {
+        lightboxCloseBtn.addEventListener("click", closeLightbox);
+      }
+      if (lightboxBackdrop) {
+        lightboxBackdrop.addEventListener("click", closeLightbox);
+      }
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !lightboxModal.hidden) {
+          closeLightbox();
+        }
+      });
+    }
+
     function bindInteractiveRecipeElements() {
       amountEls = Array.from(recipePage.querySelectorAll(".ingredient-amount"));
       inlineAmountEls = [];
+
+      // Recipe Hero Image binding
+      const heroImg = recipePage.querySelector(".recipe-hero-image");
+      if (heroImg && heroImg.dataset.boundLightbox !== "1") {
+        heroImg.dataset.boundLightbox = "1";
+        heroImg.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openLightbox(heroImg.src, heroImg.alt);
+        });
+      }
 
       if (instructionEl) {
         instructionEl.querySelectorAll("strong").forEach((strongEl) => {
@@ -192,13 +244,39 @@
         });
       });
 
-      // Step checklist toggle
+      // Step checklist toggle & Step thumbnails click-to-expand
       if (instructionEl) {
         instructionEl.querySelectorAll("ol li").forEach((step) => {
           if (step.dataset.boundStep === "1") return;
           step.dataset.boundStep = "1";
           step.addEventListener("click", () => {
             step.classList.toggle("step-done");
+          });
+        });
+
+        // Step images binding
+        instructionEl.querySelectorAll("img").forEach((stepImg) => {
+          if (stepImg.dataset.boundLightbox === "1") return;
+          stepImg.dataset.boundLightbox = "1";
+          stepImg.classList.add("step-thumbnail");
+          stepImg.setAttribute("tabindex", "0");
+          stepImg.setAttribute("role", "button");
+          stepImg.setAttribute(
+            "aria-label",
+            (stepImg.alt || "Soļa attēls") + " (klikšķini, lai palielinātu)"
+          );
+
+          const handleOpen = (e) => {
+            e.stopPropagation(); // Stop click from toggling step-done on parent li!
+            openLightbox(stepImg.src, stepImg.alt);
+          };
+
+          stepImg.addEventListener("click", handleOpen);
+          stepImg.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleOpen(e);
+            }
           });
         });
       }
@@ -1829,6 +1907,54 @@
       function renderNextCommentsPage(commits) {
         if (!versionedCommentsList) return;
         const total = allCommentsForRecipe.length;
+        function renderCommentBodyInto(container, rawText) {
+          container.innerHTML = "";
+          if (!rawText) return;
+
+          const imgRegex = /!\[([^\]]*)\]\((https?:\/\/[^\s\)]+)\)/g;
+          const images = [];
+
+          const cleanedText = String(rawText)
+            .replace(imgRegex, (_fullMatch, alt, url) => {
+              images.push({ alt: alt ? alt.trim() : "", url: url.trim() });
+              return "";
+            })
+            .trim();
+
+          if (cleanedText) {
+            const p = document.createElement("p");
+            p.className = "comment-text-para";
+            p.textContent = cleanedText;
+            container.appendChild(p);
+          }
+
+          if (images.length > 0) {
+            const imgGrid = document.createElement("div");
+            imgGrid.className = "comment-images-grid";
+            images.forEach((imgObj) => {
+              const btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = "comment-image-btn";
+              btn.title = (imgObj.alt || "Attēls") + " (klikšķini, lai palielinātu)";
+
+              const thumb = document.createElement("img");
+              thumb.src = imgObj.url;
+              thumb.alt = imgObj.alt || "Piezīmes attēls";
+              thumb.className = "comment-thumbnail";
+              thumb.loading = "lazy";
+
+              btn.appendChild(thumb);
+              btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                openLightbox(imgObj.url, imgObj.alt || "Piezīmes attēls");
+              });
+
+              imgGrid.appendChild(btn);
+            });
+            container.appendChild(imgGrid);
+          }
+        }
+
         const nextBatch = allCommentsForRecipe.slice(
           currentCommentCount,
           currentCommentCount + COMMENTS_PAGE_SIZE
@@ -1906,7 +2032,7 @@
 
           const bodyDiv = document.createElement("div");
           bodyDiv.className = "versioned-comment-body";
-          bodyDiv.textContent = item.body;
+          renderCommentBodyInto(bodyDiv, item.body);
 
           card.appendChild(metaRow);
           card.appendChild(bodyDiv);
@@ -2012,6 +2138,10 @@
               statusBadgeHtml = `<span class="badge badge-status-sm badge-status-open" title="Aktīva piezīme">⏳ Aktīvs</span> `;
             }
 
+            const cleanSummary = String(item.body || "")
+              .replace(/!\[([^\]]*)\]\((https?:\/\/[^\s\)]+)\)/g, "📷 [Attēls]")
+              .trim();
+
             noteRow.innerHTML = `<span class="history-comment-tag">💬 Piezīme pie v${vNum} (${escapeHtml(
               shortSha
             )})</span> ${statusBadgeHtml}<span class="history-comment-meta">· @${escapeHtml(
@@ -2019,7 +2149,7 @@
             )} · ${escapeHtml(
               dateFormatted
             )}:</span> <span class="history-comment-text">${escapeHtml(
-              item.body
+              cleanSummary
             )}</span>`;
             historyCommentsBox.appendChild(noteRow);
             historyCommentsBox.hidden = false;
@@ -2338,6 +2468,12 @@
           rawBody || "(Apraksti šeit savu pieprasījumu...)"
         }`
       );
+
+      if (activeType === "new-recipe") {
+        bodyParts.push(
+          `### Attēli (neobligāti)\n(Pēc pieteikuma atvēršanas GitHub šeit vari iekopēt ar Ctrl+V vai ievilkt attēlus gatavam ēdienam vai gatavošanas soļiem)`
+        );
+      }
 
       const params = new URLSearchParams();
       params.set("labels", cfg.label);

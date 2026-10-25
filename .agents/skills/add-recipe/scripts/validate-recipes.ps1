@@ -54,6 +54,14 @@ foreach ($file in $files) {
             }
         }
 
+        # Optional image path check
+        if ($frontmatter -match "(?m)^image:\s*[`"']?([^`"'\r\n]+)[`"']?") {
+            $imgPath = $Matches[1].Trim()
+            if ($imgPath -ne "" -and $imgPath -notmatch "^(/assets/|https?://)") {
+                $fileErrors += "Frontmatter 'image' should start with '/assets/' or 'http(s)://' (got '$imgPath')."
+            }
+        }
+
         if ([string]::IsNullOrWhiteSpace($body)) {
             $fileErrors += "Recipe instruction body is empty."
         }

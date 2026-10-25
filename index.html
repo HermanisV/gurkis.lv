@@ -52,7 +52,7 @@ layout: default
       {% endfor %}
 
       <article
-        class="recipe-card"
+        class="recipe-card{% if recipe.image and recipe.image != '' %} has-thumbnail{% endif %}"
         data-url="{{ recipe.url | relative_url }}"
         data-categories="{{ recipe.categories | join: '|' }}"
         data-tags="{{ recipe.tags | join: ' ' }}"
@@ -60,6 +60,13 @@ layout: default
         data-description="{{ recipe.description | escape }}"
         data-ingredients="{{ ing_names | strip | escape }}"
       >
+        {% if recipe.image and recipe.image != "" %}
+          <div class="card-thumb-wrap">
+            <a href="{{ recipe.url | relative_url }}" tabindex="-1" aria-hidden="true">
+              <img src="{{ recipe.image | relative_url }}" alt="{{ recipe.image_alt | default: recipe.title | escape }}" class="card-thumbnail" loading="lazy">
+            </a>
+          </div>
+        {% endif %}
         <div class="card-top">
           <div class="card-categories">
             {% for cat in recipe.categories %}

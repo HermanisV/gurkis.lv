@@ -19,6 +19,12 @@ layout: default
 
     <h1 class="recipe-title">{{ page.title }}</h1>
 
+    {% if page.image and page.image != "" %}
+      <div class="recipe-hero-image-wrap">
+        <img src="{{ page.image | relative_url }}" alt="{{ page.image_alt | default: page.title | escape }}" class="recipe-hero-image">
+      </div>
+    {% endif %}
+
     {% if page.description %}
       <p class="recipe-lead">{{ page.description }}</p>
     {% endif %}
@@ -306,6 +312,13 @@ layout: default
           <h2 id="comments-heading">Piezīmes un uzlabojumi nākamajai reizei</h2>
           <p class="panel-hint">Pieraksti novērojumus par cepšanas laiku, garšvielu proporcijām vai idejas nākamajai gatavošanas reizei.</p>
         </div>
+        <div class="comments-header-actions">
+          <a id="comments-add-photo-btn" href="https://github.com/{{ site.github_repo | default: 'HermanisV/gurkis.lv' }}/issues?q={{ page.path | uri_escape }}"
+             target="_blank" rel="noopener noreferrer" class="btn-outline-sm btn-add-photo"
+             title="Atvērt sarunu GitHub, kur vari iekopēt (Ctrl+V) vai ievilkt ēdiena bildes">
+            📷 Pievienot bildi ar GitHub ↗
+          </a>
+        </div>
       </div>
 
       <!-- Utterances komentāru ievades logs (rāda tikai ievades kasti ar GitHub Login, paslēpjot dublēto komentāru sarakstu) -->
@@ -390,6 +403,18 @@ layout: default
       </details>
     </section>
     {% endif %}
+  </div>
+
+  <!-- Attēlu palielināšanas (Lightbox) modālais logs -->
+  <div id="recipe-image-lightbox" class="recipe-lightbox" hidden role="dialog" aria-modal="true" aria-label="Attēla palielinājums">
+    <div class="lightbox-backdrop"></div>
+    <div class="lightbox-dialog">
+      <button type="button" class="lightbox-close-btn" id="lightbox-close-btn" aria-label="Aizvērt attēlu">&times;</button>
+      <div class="lightbox-content">
+        <img id="lightbox-img" src="" alt="">
+        <p id="lightbox-caption" class="lightbox-caption"></p>
+      </div>
+    </div>
   </div>
 </article>
 

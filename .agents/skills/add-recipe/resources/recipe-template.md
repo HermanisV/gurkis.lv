@@ -13,6 +13,8 @@ cook_time: 30
 servings: 4
 source_url: ""
 source_name: ""
+image: "" # Piemēram: "/assets/images/recipes/kraukskigi-vistas-skinkisi/cover.jpg" (neobligāti)
+image_alt: ""
 date: 2026-10-21
 ingredients:
   - group: "Galvenās sastāvdaļas"

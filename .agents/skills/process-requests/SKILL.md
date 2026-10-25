@@ -57,6 +57,7 @@ Read and follow [`.agents/skills/work-on-issue/SKILL.md`](../work-on-issue/SKILL
 1. **New Recipe (`new-recipe`)**:
    - Read and follow [.agents/skills/add-recipe/SKILL.md](../add-recipe/SKILL.md).
    - Extract the recipe from the provided URL or notes, convert all measurements to metric (`g` / `ml` / `°C`), translate into natural Latvian with bolded inline amounts (`**...**`) in every step, create `_recipes/<slug>.md`, and validate with `.agents/skills/add-recipe/scripts/validate-recipes.ps1`.
+   - **Image Handling Policy**: If the issue includes user-attached photos, save them under `assets/images/recipes/<slug>/` and link in frontmatter `image:` and/or instruction steps. If the recipe is linked by an external URL, do NOT automatically scrape or download images unless explicitly requested in the issue.
    - Use issue-prefixed branch: `feat/<IssueNumber>-<slug>`.
 
 2. **Existing Recipe Update (`recipe-update`)**:
