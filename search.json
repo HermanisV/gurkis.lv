@@ -14,6 +14,7 @@ layout: null
     {
       "title": {{ recipe.title | jsonify }},
       "url": {{ recipe.url | relative_url | jsonify }},
+      "image": {{ recipe.image | default: "" | jsonify }},
       "description": {{ recipe.description | default: "" | jsonify }},
       "categories": {{ recipe.categories | default: empty | jsonify }},
       "tags": {{ recipe.tags | default: empty | jsonify }},

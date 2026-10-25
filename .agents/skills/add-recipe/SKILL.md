@@ -23,11 +23,13 @@ Follow this step-by-step procedure whenever the user provides a new recipe (via 
    - Complete ingredient list (preserving logical groups such as "Mīklai", "Pildījumam", "Mērcei")
    - Step-by-step preparation instructions and chef tips/notes
    - Save the exact URL for the `source_url` frontmatter field.
+4. **Image Handling Policy for External URLs**: Do **NOT** automatically download, scrape, or add pictures from the external website unless explicitly requested in the issue or by the user. If pictures are explicitly requested, save them under `assets/images/recipes/<slug>/` (e.g. `cover.jpg`, `solis-1.jpg`) and reference via `image:` or in instruction markdown.
 
 ### Case B: Freeform Chat Input / User Notes
 1. Parse the ingredients, quantities, and cooking method described by the user.
 2. If the user gives rough descriptions or omits minor standard details (such as prep time or exact oven temperature for a standard bake), infer sensible culinary defaults and note them clearly for the user, or ask a brief clarifying question if a critical ratio is ambiguous.
 3. Leave `source_url: ""` (or set `source_name: "Paša recepte"` if appropriate).
+4. **Images Provided by User**: If the user attached images in the issue or chat, save them under `assets/images/recipes/<slug>/` (e.g., `cover.jpg`, `solis-1.jpg`), add `image: "/assets/images/recipes/<slug>/cover.jpg"` to frontmatter, and place step thumbnails directly in the Markdown steps (e.g., `1. Solis... ![Apraksts](/assets/images/recipes/<slug>/solis-1.jpg)`).
 
 ---
 
