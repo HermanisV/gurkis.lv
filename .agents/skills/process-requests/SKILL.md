@@ -17,16 +17,30 @@ For investigating or creating an implementation plan for a specific GitHub Issue
 
 ## Step 1: Read Open Page Requests from GitHub
 
-1. Run the issue/request fetcher script from the repository root:
-   - **To fetch all open requests** (default):
-     ```powershell
-     powershell -ExecutionPolicy Bypass -File .agents/skills/fetch-issue/scripts/get-github-issue.ps1 -State open
-     ```
-     *(Or `.agents/skills/process-requests/scripts/get-page-requests.ps1 -State open`)*
-   - **To fetch a specific issue by URL or number** (e.g. `#22` or `https://github.com/HermanisV/gurkis.lv/issues/22`):
-     ```powershell
-     powershell -ExecutionPolicy Bypass -File .agents/skills/fetch-issue/scripts/get-github-issue.ps1 -Issue 22
-     ```
+### Primary Method: GitHub MCP Server (Recommended)
+
+1. When the GitHub MCP server is active, call `list_issues` (`ServerName: "github"`, `ToolName: "list_issues"`):
+   ```json
+   {
+     "owner": "HermanisV",
+     "repo": "gurkis.lv",
+     "state": "open"
+   }
+   ```
+2. Filter for user requests submitted via `/pievienot/` (issues with label `pieprasijums` or titled `[Jauna recepte]` / `[Lapas uzlabojums]`, excluding Utterances comment threads).
+3. For an individual issue `#N`, call `get_issue` (`ServerName: "github"`, `ToolName: "get_issue"`) with `owner: "HermanisV"`, `repo: "gurkis.lv"`, `issue_number: N`.
+
+### Fallback Method: Helper PowerShell Script
+
+If GitHub MCP is not active, run the issue/request fetcher script from the repository root:
+- **To fetch all open requests** (default):
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .agents/skills/fetch-issue/scripts/get-github-issue.ps1 -State open
+  ```
+- **To fetch a specific issue by URL or number** (e.g. `#22` or `https://github.com/HermanisV/gurkis.lv/issues/22`):
+  ```powershell
+  powershell -ExecutionPolicy Bypass -File .agents/skills/fetch-issue/scripts/get-github-issue.ps1 -Issue 22
+  ```
 2. Review each returned request:
    - `IssueNumber`: The GitHub Issue number (`#N`).
    - `IssueType` / `RequestType`:
@@ -65,6 +79,16 @@ Read and follow [`.agents/skills/work-on-issue/SKILL.md`](../work-on-issue/SKILL
    git push -u origin <branch-name>
    ```
 3. **Prepare the Issue Comment & Closure Instructions for the User**:
-   - Do NOT auto-close the issue via CLI/API unless explicitly instructed. Instead, prepare a ready-to-copy Latvian comment block (starting with `[Ieviests]`, summarizing what was done, and linking to `https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`) and instruct the user to:
+   - Prepare a ready-to-copy Latvian comment block (starting with `[Ieviests]`, summarizing what was done, and linking to `https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`).
+   - If GitHub MCP is available and the user requests automated commenting, you may post the comment directly using MCP tool `add_issue_comment`:
+     ```json
+     {
+       "owner": "HermanisV",
+       "repo": "gurkis.lv",
+       "issue_number": <IssueNumber>,
+       "body": "[Ieviests] Izmaiņas ir sagatavotas zarā `<branch-name>`!\n\n- **Paveiktais:** ...\n- **Pull Request saite:** https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>"
+     }
+     ```
+   - Instruct the user to:
      1. Review and merge the PR via `https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`.
-     2. Paste the prepared comment into `https://github.com/HermanisV/gurkis.lv/issues/<IssueNumber>` and close the ticket.
+     2. Open `https://github.com/HermanisV/gurkis.lv/issues/<IssueNumber>` and close the ticket (merging the PR with `(Closes #<IssueNumber>)` will also auto-close it once merged into `main`).

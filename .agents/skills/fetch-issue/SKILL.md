@@ -20,7 +20,34 @@ Use this skill whenever the user asks to inspect, investigate, plan, or work on 
 
 ## Step 1: Fetch the Issue Details from GitHub
 
-Run `get-github-issue.ps1` from the repository root:
+### Primary Method: GitHub MCP Server (Recommended)
+
+When the **GitHub MCP** server is available in the environment (`call_mcp_tool` under `github`), fetch issue details directly via MCP without running terminal scripts:
+
+1. **Fetch Single Issue**:
+   - Call MCP tool `get_issue` (`ServerName: "github"`, `ToolName: "get_issue"`):
+     ```json
+     {
+       "owner": "HermanisV",
+       "repo": "gurkis.lv",
+       "issue_number": <IssueNumber>
+     }
+     ```
+2. **Review Comments & Discussions**:
+   - Check the issue `comments` count. If comments exist, review them via MCP or commit timeline to understand follow-up requirements, refinements, or user clarifications.
+3. **List Open Issues / Requests**:
+   - Call MCP tool `list_issues` (`ServerName: "github"`, `ToolName: "list_issues"`):
+     ```json
+     {
+       "owner": "HermanisV",
+       "repo": "gurkis.lv",
+       "state": "open"
+     }
+     ```
+
+### Fallback Method: Helper PowerShell Script
+
+If the GitHub MCP server is not active or configured in the environment, run `get-github-issue.ps1` from the repository root:
 
 - **To fetch a specific issue by full URL or issue number**:
   ```powershell

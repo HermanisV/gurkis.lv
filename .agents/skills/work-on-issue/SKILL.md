@@ -16,7 +16,7 @@ Follow this workflow whenever you are implementing changes tied to a specific Gi
 
 ## Step 1: Ensure Issue Context & Create Issue-Prefixed Branch
 
-1. If you have not yet fetched the details of Issue `#<IssueNumber>` in this conversation, first run [`fetch-issue`](../fetch-issue/SKILL.md) (`get-github-issue.ps1 -Issue <IssueNumber>`).
+1. If you have not yet fetched the details of Issue `#<IssueNumber>` in this conversation, first run [`fetch-issue`](../fetch-issue/SKILL.md) (calling `get_issue` via GitHub MCP, or running `get-github-issue.ps1 -Issue <IssueNumber>` as fallback).
 2. Sync with `origin/main` and create a dedicated branch that includes `<IssueNumber>` immediately after `feat/` or `fix/`:
    - **New recipe or new site feature**: `feat/<IssueNumber>-<slug>`
      - Examples: `feat/29-kremigs-senu-sacepums`, `feat/29-gatavosanas-taimeris`
@@ -73,7 +73,7 @@ Depending on the issue's scope, execute the corresponding domain skill while kee
 
 ## Step 4: Prepare Issue Comment & Instruct the User to Close the Ticket
 
-Do **NOT** attempt to auto-close the GitHub Issue via CLI or API scripts unless explicitly asked to run a script with credentials. Instead, ALWAYS provide the user with:
+Provide the user with the PR link, a ready-to-copy Latvian comment, and optional automated posting via GitHub MCP:
 
 1. **Pull Request Creation Link**:
    - Direct link: `https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`
@@ -86,6 +86,7 @@ Do **NOT** attempt to auto-close the GitHub Issue via CLI or API scripts unless 
      - **Pull Request saite:** https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>
      ````
    *(Note: Starting the comment with `[Ieviests]` ensures that if the issue is linked to a recipe page's comment log, the website UI automatically badges it as `✓ Ieviests`.)*
+   - If GitHub MCP is active and the user requests automated posting, post the comment directly with MCP tool `add_issue_comment`.
 3. **Clear Next-Step Instructions for the User**:
    - Instruct the user to:
      1. Open the Pull Request link (`https://github.com/HermanisV/gurkis.lv/pull/new/<branch-name>`) to review and merge the branch into `main`.
