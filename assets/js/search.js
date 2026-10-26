@@ -1464,10 +1464,10 @@
 
         // Dynamic pepper breakdown description for instructions
         const pepperParts = [];
-        if (W_jalapeno >= 0.5) pepperParts.push(`**${Math.round(W_jalapeno)} g** sarkano halapenjo`);
-        if (W_serrano >= 0.5) pepperParts.push(`**${Math.round(W_serrano)} g** sarkano serrano`);
-        if (W_habanero >= 0.5) pepperParts.push(`**${Math.round(W_habanero)} g** habanero`);
-        const breakdownText = pepperParts.length > 0 ? pepperParts.join(", ") : `**${Math.round(W_peppers)} g** čili`;
+        if (W_jalapeno >= 0.5) pepperParts.push(`${Math.round(W_jalapeno)} g sarkano halapenjo`);
+        if (W_serrano >= 0.5) pepperParts.push(`${Math.round(W_serrano)} g sarkano serrano`);
+        if (W_habanero >= 0.5) pepperParts.push(`${Math.round(W_habanero)} g habanero`);
+        const breakdownText = pepperParts.length > 0 ? pepperParts.join(", ") : `${Math.round(W_peppers)} g čili`;
 
         // Update Inline Instruction Amounts
         const inlineValues = {
@@ -1782,10 +1782,10 @@
 
         // Dynamic chili breakdown description for instructions
         const pepperParts = [];
-        if (W_jalapeno >= 0.5) pepperParts.push(`**${Math.round(W_jalapeno)} g** sarkano halapenjo`);
-        if (W_serrano >= 0.5) pepperParts.push(`**${Math.round(W_serrano)} g** sarkano serrano`);
-        if (W_habanero >= 0.5) pepperParts.push(`**${Math.round(W_habanero)} g** habanero`);
-        const breakdownText = pepperParts.length > 0 ? pepperParts.join(", ") : `**${Math.round(W_chili)} g** čili`;
+        if (W_jalapeno >= 0.5) pepperParts.push(`${Math.round(W_jalapeno)} g sarkano halapenjo`);
+        if (W_serrano >= 0.5) pepperParts.push(`${Math.round(W_serrano)} g sarkano serrano`);
+        if (W_habanero >= 0.5) pepperParts.push(`${Math.round(W_habanero)} g habanero`);
+        const breakdownText = pepperParts.length > 0 ? pepperParts.join(", ") : `${Math.round(W_chili)} g čili`;
 
         // Update Inline Instruction Amounts
         const inlineValues = {
