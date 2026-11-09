@@ -23,7 +23,7 @@ Follow this step-by-step procedure whenever the user provides a new recipe (via 
    - Complete ingredient list (preserving logical groups such as "Mīklai", "Pildījumam", "Mērcei")
    - Step-by-step preparation instructions and chef tips/notes
    - Save the exact URL for the `source_url` frontmatter field.
-4. **Image Handling Policy for External URLs**: Do **NOT** automatically download, scrape, or add pictures from the external website unless explicitly requested in the issue or by the user. If pictures are explicitly requested, save them under `assets/images/recipes/<slug>/` (e.g. `cover.jpg`, `solis-1.jpg`) and reference via `image:` or in instruction markdown.
+4. **Image Handling Policy for External URLs**: Do **NOT** automatically download, scrape, or add pictures from the external website unless explicitly requested in the issue or by the user. If pictures are explicitly requested, save them under `assets/images/recipes/<slug>/` (e.g. `cover.jpg`, `solis-1.jpg`), verify they are valid non-empty image files, and reference via `image:` in frontmatter or inside numbered instruction steps (`![Apraksts](/assets/images/recipes/<slug>/solis-1.jpg)`). Note that `assets/js/search.js` (`renderMarkdownBody` / `formatInlineMarkdown`) dynamically re-renders `#recipe-instructions` from raw Markdown when syncing version history, and automatically attaches indented step image lines into the parent `<ol><li>` with lightbox support.
 
 ### Case B: Freeform Chat Input / User Notes
 1. Parse the ingredients, quantities, and cooking method described by the user.
