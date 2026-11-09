@@ -5,7 +5,8 @@
 # 3. No forbidden imperial units (cups, oz, lbs, F, inches) in ingredients or body
 
 $ErrorActionPreference = "Stop"
-$recipesDir = Join-Path $PSScriptRoot "..\..\..\..\_recipes"
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..\..")).Path
+$recipesDir = Join-Path $repoRoot "_recipes"
 
 if (-not (Test-Path $recipesDir)) {
     Write-Host "No _recipes directory found at $recipesDir" -ForegroundColor Yellow
@@ -55,10 +56,31 @@ foreach ($file in $files) {
         }
 
         # Optional image path check
-        if ($frontmatter -match "(?m)^image:\s*[`"']?([^`"'\r\n]+)[`"']?") {
+        if ($frontmatter -match "(?m)^image:\s*[`"']?([^`"'\r\n#]+)[`"']?") {
             $imgPath = $Matches[1].Trim()
             if ($imgPath -ne "" -and $imgPath -notmatch "^(/assets/|https?://)") {
                 $fileErrors += "Frontmatter 'image' should start with '/assets/' or 'http(s)://' (got '$imgPath')."
+            } elseif ($imgPath -match "^/assets/") {
+                $localImg = Join-Path $repoRoot ($imgPath.TrimStart('/') -replace '/', '\')
+                if (-not (Test-Path $localImg)) {
+                    $fileErrors += "Frontmatter 'image' file does not exist on disk: $imgPath"
+                } elseif ((Get-Item $localImg).Length -eq 0) {
+                    $fileErrors += "Frontmatter 'image' file is empty (0 bytes): $imgPath"
+                }
+            }
+        }
+
+        # Check inline markdown images in body
+        $inlineImgs = [regex]::Matches($body, '!\[[^\]]*\]\(([^)]+)\)')
+        foreach ($im in $inlineImgs) {
+            $inlinePath = $im.Groups[1].Value.Trim()
+            if ($inlinePath -match "^/assets/") {
+                $localStepImg = Join-Path $repoRoot ($inlinePath.TrimStart('/') -replace '/', '\')
+                if (-not (Test-Path $localStepImg)) {
+                    $fileErrors += "Inline step image file does not exist on disk: $inlinePath"
+                } elseif ((Get-Item $localStepImg).Length -eq 0) {
+                    $fileErrors += "Inline step image file is empty (0 bytes): $inlinePath"
+                }
             }
         }
 

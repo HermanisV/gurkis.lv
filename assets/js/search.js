@@ -2025,6 +2025,10 @@
 
       function formatInlineMarkdown(text) {
         let html = escapeHtml(text);
+        html = html.replace(
+          /!\[([^\]]*)\]\(([^)]+)\)/g,
+          '<img src="$2" alt="$1" class="step-thumbnail" loading="lazy">'
+        );
         html = html.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
         html = html.replace(/\*(.+?)\*/g, "<em>$1</em>");
         html = html.replace(/`(.+?)`/g, "<code>$1</code>");
@@ -2036,6 +2040,7 @@
         const out = [];
         let inOl = false;
         let inUl = false;
+        let hadBlankLine = false;
 
         function closeLists() {
           if (inOl) {
@@ -2048,16 +2053,28 @@
           }
         }
 
+        function appendToLastLi(htmlFragment) {
+          for (let j = out.length - 1; j >= 0; j--) {
+            if (out[j].startsWith("<li>") && out[j].endsWith("</li>")) {
+              out[j] = out[j].slice(0, -5) + " " + htmlFragment + "</li>";
+              return true;
+            }
+          }
+          return false;
+        }
+
         for (let i = 0; i < lines.length; i++) {
-          const line = lines[i].trim();
+          const rawLine = lines[i];
+          const line = rawLine.trim();
           if (!line) {
-            closeLists();
+            hadBlankLine = true;
             continue;
           }
 
           const h2Match = line.match(/^##\s+(.+)$/);
           if (h2Match) {
             closeLists();
+            hadBlankLine = false;
             out.push(`<h2>${formatInlineMarkdown(h2Match[1])}</h2>`);
             continue;
           }
@@ -2065,6 +2082,7 @@
           const h3Match = line.match(/^###\s+(.+)$/);
           if (h3Match) {
             closeLists();
+            hadBlankLine = false;
             out.push(`<h3>${formatInlineMarkdown(h3Match[1])}</h3>`);
             continue;
           }
@@ -2079,6 +2097,7 @@
               out.push("<ol>");
               inOl = true;
             }
+            hadBlankLine = false;
             out.push(`<li>${formatInlineMarkdown(olMatch[1])}</li>`);
             continue;
           }
@@ -2093,11 +2112,22 @@
               out.push("<ul>");
               inUl = true;
             }
+            hadBlankLine = false;
             out.push(`<li>${formatInlineMarkdown(ulMatch[1])}</li>`);
             continue;
           }
 
+          const isImageLine = /^!\[([^\]]*)\]\(([^)]+)\)$/.test(line);
+          const isIndentedContinuation = /^\s+/.test(rawLine) && !hadBlankLine;
+          if ((inOl || inUl) && (isImageLine || isIndentedContinuation)) {
+            if (appendToLastLi(formatInlineMarkdown(line))) {
+              hadBlankLine = false;
+              continue;
+            }
+          }
+
           closeLists();
+          hadBlankLine = false;
           out.push(`<p>${formatInlineMarkdown(line)}</p>`);
         }
 

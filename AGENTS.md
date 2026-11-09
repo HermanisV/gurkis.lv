@@ -77,9 +77,10 @@ All measurements in `_recipes/*.md` MUST be in **metric units**, with a strict p
    - **Recipe Image Storage & Paths**:
      - Store local recipe images in `assets/images/recipes/<slug>/` (e.g., `cover.jpg`, `solis-1.jpg`).
      - Cover image: specify in YAML frontmatter via `image: "/assets/images/recipes/<slug>/cover.jpg"`.
-     - Step thumbnails: include inside the markdown instruction step as `![Apraksts](/assets/images/recipes/<slug>/solis-1.jpg)`.
+     - Step thumbnails: include inside the markdown instruction step as `![Apraksts](/assets/images/recipes/<slug>/solis-1.jpg)` (either inline at the end of the step or on the next indented line under the numbered step).
      - In recipe cards (`index.html`), a compact thumbnail is displayed automatically if `recipe.image` is set.
-     - In instructions (`_layouts/recipe.html`), step thumbnails are clickable and expand into a lightbox view without affecting the step completion checklist.
+     - In instructions (`_layouts/recipe.html` and client-side version renderer `renderMarkdownBody` / `formatInlineMarkdown` in `assets/js/search.js`), step thumbnails are rendered as `<img class="step-thumbnail">` inside `<ol><li>` and expand into a lightbox view without toggling the step completion checklist.
+     - `validate-recipes.ps1` verifies that all local `/assets/...` paths referenced in `image:` and `![...](/assets/...)` exist on disk and are non-empty.
 
 ---
 
