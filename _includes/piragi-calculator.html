@@ -1,0 +1,61 @@
+<section class="piragi-calculator" id="piragi-calculator" aria-label="Pīrāgu mīklas daudzuma kalkulators">
+  <div class="calc-header">
+    <div>
+      <h2 class="calc-title">🥐 Pīrāgu mīklas daudzuma kalkulators</h2>
+      <p class="calc-subtitle">Pielāgo vēlamo kopējo mīklas svaru ar slīdni — visas sastāvdaļas un pagatavošanas soļi zemāk automātiski pārrēķināsies proporcionāli (pēc noklusējuma 1 kg mīklas).</p>
+    </div>
+    <div class="calc-presets" role="group" aria-label="Mīklas svara priekšiestatījumi">
+      <button type="button" class="calc-preset-btn" data-dough-g="500">0.5 kg (500 g · ~20 pīrādziņi)</button>
+      <button type="button" class="calc-preset-btn active" data-dough-g="1000">1 kg (1000 g · Noklusējums)</button>
+      <button type="button" class="calc-preset-btn" data-dough-g="1505">1.5 kg (1505 g · Bāzes 800 g miltu)</button>
+      <button type="button" class="calc-preset-btn" data-dough-g="2000">2 kg (2000 g · ~80 pīrādziņi)</button>
+    </div>
+  </div>
+
+  <div class="calc-card" style="margin-bottom: 1.25rem;">
+    <div class="calc-field">
+      <div class="calc-label-row">
+        <label for="piragi-dough-g">Kopējais mīklas svars (g)</label>
+        <span class="calc-unit-badge" id="piragi-dough-badge">1000 g (1.00 kg · 0.66×)</span>
+      </div>
+      <div class="calc-slider-group">
+        <input type="range" id="piragi-dough-range" class="calc-range" min="250" max="3000" step="50" value="1000" aria-label="Kopējais pīrāgu mīklas svars gramos">
+        <input type="number" id="piragi-dough-g" class="calc-input calc-input-sm" min="100" max="10000" step="50" value="1000">
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator Output Summary Bar -->
+  <div class="calc-summary-bar">
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Kopējais mīklas svars</span>
+      <span class="calc-summary-value" id="piragi-out-total-dough">1000 g (1.0 kg)</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Kviešu milti kopā</span>
+      <span class="calc-summary-value" id="piragi-out-flour">532 g</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Lauku piens (3.5–4%)</span>
+      <span class="calc-summary-value" id="piragi-out-milk">332 ml</span>
+    </div>
+    <div class="calc-summary-item">
+      <span class="calc-summary-label">Aptuvenais iznākums</span>
+      <span class="calc-summary-value" id="piragi-out-yield">~40 pīrādziņi</span>
+    </div>
+  </div>
+
+  <details class="calc-tech-details">
+    <summary>Rādīt detalizētu proporciju un soļu sadalījumu</summary>
+    <div class="calc-tech-grid">
+      <div><strong>Mēroga koeficients (pret 1505 g bāzi):</strong> <span id="piragi-tech-scale">0.664×</span></div>
+      <div><strong>Kviešu milti (1. solis / 3. solis):</strong> <span id="piragi-tech-flour-split">5 g / 527 g (kopā 532 g)</span></div>
+      <div><strong>Lauku piens 3.5–4% (1. solis / 2. solis):</strong> <span id="piragi-tech-milk-split">15 ml / 317 ml (kopā 332 ml)</span></div>
+      <div><strong>Cukura sīrups (1. solis / 2. solis):</strong> <span id="piragi-tech-syrup-split">7 g / 59 g (kopā 66 g)</span></div>
+      <div><strong>Sviests (82%):</strong> <span id="piragi-tech-butter">27 g</span></div>
+      <div><strong>Svaigais raugs:</strong> <span id="piragi-tech-yeast">33 g (vai ~11 g sausais)</span></div>
+      <div><strong>Sāls:</strong> <span id="piragi-tech-salt">10 g (1.5 tk)</span></div>
+      <div><strong>Kontroles kopsvars:</strong> <span id="piragi-tech-total">1000 g</span></div>
+    </div>
+  </details>
+</section>
