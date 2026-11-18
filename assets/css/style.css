@@ -756,11 +756,12 @@ body {
   opacity: 0.45;
 }
 
-/* Pizza, Bread, Sriracha & Adzika Calculators */
+/* Pizza, Bread, Sriracha, Adzika & Piragi Calculators */
 .pizza-calculator,
 .bread-calculator,
 .sriracha-calculator,
-.adzika-calculator {
+.adzika-calculator,
+.piragi-calculator {
   background-color: var(--bg-card);
   border: 2px solid #c5d6c9;
   border-radius: var(--radius-md);

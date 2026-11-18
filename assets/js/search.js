@@ -156,9 +156,11 @@
     const breadCalcEl = document.getElementById("bread-calculator");
     const srirachaCalcEl = document.getElementById("sriracha-calculator");
     const adzikaCalcEl = document.getElementById("adzika-calculator");
+    const piragiCalcEl = document.getElementById("piragi-calculator");
     const hasCalculator = Boolean(
-      pizzaCalcEl || breadCalcEl || srirachaCalcEl || adzikaCalcEl
+      pizzaCalcEl || breadCalcEl || srirachaCalcEl || adzikaCalcEl || piragiCalcEl
     );
+    let recalculatePiragiFn = null;
     const titleEl = recipePage.querySelector(".recipe-title");
     const leadEl = recipePage.querySelector(".recipe-lead");
 
@@ -1896,6 +1898,237 @@
 
       // Initial calculation on page load
       recalculateAdzika();
+    } else if (piragiCalcEl) {
+      // Piragi Dough Scalar Calculator Mode (Base = 1505 g dough: 800g flour, 500ml milk, 100g syrup, 40g butter, 50g yeast, 15g salt; Default = 1000 g / 1 kg)
+      const BASE_DOUGH_G = 1505;
+      const BASE_FLOUR_G = 800;
+      const BASE_MILK_ML = 500;
+      const BASE_SYRUP_G = 100;
+      const BASE_BUTTER_G = 40;
+      const BASE_YEAST_G = 50;
+      const BASE_SALT_G = 15;
+
+      let presetBaseDoughG = 1000;
+
+      const elDoughG = document.getElementById("piragi-dough-g");
+      const elDoughRange = document.getElementById("piragi-dough-range");
+      const presetBtns = piragiCalcEl.querySelectorAll(".calc-preset-btn");
+
+      function clampPiragiNum(val, min, max, fallback) {
+        const n = parseFloat(val);
+        if (isNaN(n)) return fallback;
+        return Math.min(max, Math.max(min, n));
+      }
+
+      function setPiragiText(id, text) {
+        const node = document.getElementById(id);
+        if (node) node.textContent = text;
+      }
+
+      function formatSaltWithTsp(saltG) {
+        const roundedHalf = Math.round(saltG * 2) / 2;
+        const gStr = roundedHalf % 1 === 0 ? `${roundedHalf.toFixed(0)} g` : `${roundedHalf.toFixed(1)} g`;
+        // 1 tk = ~6 g salt
+        const tsp = Math.round((saltG / 6) * 2) / 2;
+        if (tsp >= 0.5 && tsp <= 6) {
+          const tspStr = tsp % 1 === 0 ? `${tsp.toFixed(0)} tk` : `${tsp.toFixed(1)} tk`;
+          return `${gStr} (${tspStr})`;
+        }
+        return gStr;
+      }
+
+      function recalculatePiragiDough() {
+        const W_dough = Math.round(
+          clampPiragiNum(elDoughG ? elDoughG.value : 1000, 100, 10000, 1000)
+        );
+        const scaleFactor = W_dough / BASE_DOUGH_G;
+        const doughKgStr = (W_dough / 1000).toFixed(2).replace(/\.00$/, ".0").replace(/(\.\d)0$/, "$1");
+
+        // Calculate individual ingredient weights scaled proportionally to W_dough
+        const W_milk = Math.round(BASE_MILK_ML * scaleFactor);
+        const W_syrup = Math.round(BASE_SYRUP_G * scaleFactor);
+        const W_butter = Math.round(BASE_BUTTER_G * scaleFactor);
+        const W_yeast = Math.max(1, Math.round(BASE_YEAST_G * scaleFactor));
+        const W_salt = Math.max(1, Math.round(BASE_SALT_G * scaleFactor));
+        // Ensure total rounded components sum to exact target dough weight W_dough
+        const W_flour = Math.max(
+          10,
+          W_dough - (W_milk + W_syrup + W_butter + W_yeast + W_salt)
+        );
+
+        // Step 1 starter activation portions (~4.5% of milk, ~10% of syrup, ~1% of flour)
+        const W_milk_step1 = Math.min(
+          Math.max(5, Math.round(W_milk * 0.045)),
+          Math.max(5, Math.floor(W_milk * 0.25))
+        );
+        const W_milk_step2 = Math.max(1, W_milk - W_milk_step1);
+
+        const W_syrup_step1 = Math.min(
+          Math.max(2, Math.round(W_syrup * 0.10)),
+          Math.max(2, Math.floor(W_syrup * 0.3))
+        );
+        const W_syrup_step2 = Math.max(1, W_syrup - W_syrup_step1);
+
+        const W_flour_step1 = Math.min(
+          Math.max(3, Math.round(W_flour * 0.01)),
+          Math.max(3, Math.floor(W_flour * 0.1))
+        );
+        const W_flour_step3 = Math.max(1, W_flour - W_flour_step1);
+
+        const W_dry_yeast = Math.max(1, Math.round((W_yeast / 3) * 10) / 10);
+        const estPiragiCount = Math.max(4, Math.round(W_dough / 25));
+
+        const saltFormatted = formatSaltWithTsp(W_salt);
+        const milkStep1Str =
+          W_milk_step1 === 15 ? "15 ml (1 ēk)" : `${W_milk_step1} ml`;
+        const flourStep1Str =
+          W_flour_step1 === 5
+            ? "5 g (1 tk)"
+            : W_flour_step1 === 8
+            ? "8 g (1 ēk)"
+            : `${W_flour_step1} g`;
+
+        // Update badge & summary bar
+        setPiragiText(
+          "piragi-dough-badge",
+          `${W_dough} g (${doughKgStr} kg · ${scaleFactor.toFixed(2)}×)`
+        );
+        setPiragiText("piragi-out-total-dough", `${W_dough} g (${doughKgStr} kg)`);
+        setPiragiText("piragi-out-flour", `${W_flour} g`);
+        setPiragiText("piragi-out-milk", `${W_milk} ml`);
+        setPiragiText("piragi-out-yield", `~${estPiragiCount} pīrādziņi`);
+
+        // Update technical details
+        setPiragiText("piragi-tech-scale", `${scaleFactor.toFixed(3)}×`);
+        setPiragiText(
+          "piragi-tech-flour-split",
+          `${W_flour_step1} g / ${W_flour_step3} g (kopā ${W_flour} g)`
+        );
+        setPiragiText(
+          "piragi-tech-milk-split",
+          `${W_milk_step1} ml / ${W_milk_step2} ml (kopā ${W_milk} ml)`
+        );
+        setPiragiText(
+          "piragi-tech-syrup-split",
+          `${W_syrup_step1} g / ${W_syrup_step2} g (kopā ${W_syrup} g)`
+        );
+        setPiragiText("piragi-tech-butter", `${W_butter} g`);
+        setPiragiText(
+          "piragi-tech-yeast",
+          `${W_yeast} g (vai ~${W_dry_yeast} g sausais)`
+        );
+        setPiragiText("piragi-tech-salt", saltFormatted);
+        setPiragiText(
+          "piragi-tech-total",
+          `${W_flour + W_milk + W_syrup + W_butter + W_yeast + W_salt} g`
+        );
+
+        // Update header servings display
+        if (servingsEl) {
+          servingsEl.textContent = `${doughKgStr} kg (~${estPiragiCount} pīrādziņi)`;
+        }
+
+        // Update group title if present
+        const groupTitleEl = recipePage.querySelector(".ingredient-group-title");
+        if (groupTitleEl) {
+          groupTitleEl.textContent = `Mīklai (${doughKgStr} kg porcijai)`;
+        }
+
+        // Update Ingredients List panel
+        const ingredientMap = {
+          piragi_flour: `${W_flour} g`,
+          piragi_milk: `${W_milk} ml`,
+          piragi_syrup: `${W_syrup} g`,
+          piragi_butter: `${W_butter} g`,
+          piragi_yeast: `${W_yeast} g`,
+          piragi_salt: saltFormatted
+        };
+
+        Object.keys(ingredientMap).forEach((key) => {
+          const textVal = ingredientMap[key];
+          const amountNode = recipePage.querySelector(`[data-calc-amount="${key}"]`);
+          if (amountNode) {
+            amountNode.textContent = textVal;
+            amountNode.dataset.baseAmount = textVal;
+          }
+        });
+
+        // Update Inline Instruction Amounts
+        const inlineValues = {
+          piragi_yeast: `${W_yeast} g`,
+          piragi_syrup_step1: `${W_syrup_step1} g`,
+          piragi_milk_step1: milkStep1Str,
+          piragi_flour_step1: flourStep1Str,
+          piragi_milk_step2: `${W_milk_step2} ml`,
+          piragi_butter: `${W_butter} g`,
+          piragi_salt: saltFormatted,
+          piragi_syrup_step2: `${W_syrup_step2} g`,
+          piragi_flour_step3: `${W_flour_step3} g`,
+          piragi_total_dough: `${W_dough} g`
+        };
+
+        Object.keys(inlineValues).forEach((key) => {
+          recipePage.querySelectorAll(`[data-calc-inline="${key}"]`).forEach((el) => {
+            el.textContent = inlineValues[key];
+          });
+        });
+      }
+
+      recalculatePiragiFn = recalculatePiragiDough;
+
+      if (elDoughRange && elDoughG) {
+        elDoughRange.addEventListener("input", () => {
+          elDoughG.value = elDoughRange.value;
+          const v = parseInt(elDoughRange.value, 10);
+          presetBtns.forEach((b) =>
+            b.classList.toggle("active", parseInt(b.dataset.doughG, 10) === v)
+          );
+          recalculatePiragiDough();
+        });
+        elDoughG.addEventListener("input", () => {
+          const v = clampPiragiNum(elDoughG.value, 100, 10000, 1000);
+          elDoughRange.value = Math.min(3000, Math.max(250, v));
+          presetBtns.forEach((b) =>
+            b.classList.toggle("active", parseInt(b.dataset.doughG, 10) === Math.round(v))
+          );
+          recalculatePiragiDough();
+        });
+      }
+
+      presetBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const targetG = parseInt(btn.dataset.doughG, 10) || 1000;
+          presetBaseDoughG = targetG;
+          presetBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          if (elDoughG) elDoughG.value = targetG;
+          if (elDoughRange) elDoughRange.value = Math.min(3000, Math.max(250, targetG));
+
+          scaleBtns.forEach((b) => b.classList.toggle("active", b.dataset.scale === "1"));
+          recalculatePiragiDough();
+        });
+      });
+
+      // Connect portion scale buttons (0.5x, 1x, 2x, 3x) to scale active preset dough weight
+      scaleBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const factor = parseFloat(btn.dataset.scale) || 1;
+          scaleBtns.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          const scaledG = Math.round(presetBaseDoughG * factor);
+          if (elDoughG) elDoughG.value = scaledG;
+          if (elDoughRange) elDoughRange.value = Math.min(3000, Math.max(250, scaledG));
+          presetBtns.forEach((b) =>
+            b.classList.toggle("active", parseInt(b.dataset.doughG, 10) === scaledG)
+          );
+          recalculatePiragiDough();
+        });
+      });
+
+      // Initial calculation on page load
+      recalculatePiragiDough();
     } else {
       // Standard Recipe Portion Scaling
       scaleBtns.forEach((btn) => {
@@ -1965,6 +2198,7 @@
           if (totalHeight <= 315) {
             // 0 comments rendered yet (only .timeline-header + NewCommentComponent)
             baseBoxHeight = Math.max(195, totalHeight - HEADER_HEIGHT_PX);
+            commentsBaselineHeight = totalHeight;
             utterancesInputViewport.style.setProperty(
               "--utterances-box-height",
               `${baseBoxHeight}px`
@@ -2025,6 +2259,10 @@
 
       function formatInlineMarkdown(text) {
         let html = escapeHtml(text);
+        html = html.replace(
+          /&lt;strong\s+data-calc-inline=&quot;([a-zA-Z0-9_-]+)&quot;&gt;([\s\S]*?)&lt;\/strong&gt;/g,
+          '<strong data-calc-inline="$1">$2</strong>'
+        );
         html = html.replace(
           /!\[([^\]]*)\]\(([^)]+)\)/g,
           '<img src="$2" alt="$1" class="step-thumbnail" loading="lazy">'
@@ -2158,6 +2396,7 @@
         const titleMatch = yaml.match(/^title:\s*(.+)$/m);
         const descMatch = yaml.match(/^description:\s*(.+)$/m);
         const servMatch = yaml.match(/^servings:\s*(\d+(?:\.\d+)?)/m);
+        const calcMatch = yaml.match(/^calculator:\s*(.+)$/m);
 
         const groups = [];
         const yamlLines = yaml.replace(/\r\n/g, "\n").split("\n");
@@ -2215,6 +2454,7 @@
           title: titleMatch ? stripYamlQuotes(titleMatch[1]) : "",
           description: descMatch ? stripYamlQuotes(descMatch[1]) : "",
           servings: servMatch ? parseFloat(servMatch[1]) : null,
+          calculator: calcMatch ? stripYamlQuotes(calcMatch[1]) : "",
           ingredients: groups,
           bodyHtml: renderMarkdownBody(body)
         };
@@ -2299,25 +2539,48 @@
 
           if (titleEl && parsed.title) titleEl.textContent = parsed.title;
           if (leadEl && parsed.description) leadEl.textContent = parsed.description;
-          if (parsed.servings && !hasCalculator) {
-            baseServings = parsed.servings;
-          }
-          if (ingredientsGroupsEl && parsed.ingredients.length > 0 && !hasCalculator) {
-            ingredientsGroupsEl.innerHTML = renderIngredientsGroupsHtml(parsed.ingredients);
-          }
-          if (instructionEl && !hasCalculator) {
-            instructionEl.innerHTML = parsed.bodyHtml;
-          }
 
-          bindInteractiveRecipeElements();
+          if (piragiCalcEl) {
+            const verHasPiragiCalc = parsed.calculator === "piragu_mikla";
+            piragiCalcEl.hidden = !verHasPiragiCalc;
+            if (ingredientsGroupsEl && parsed.ingredients.length > 0) {
+              ingredientsGroupsEl.innerHTML = renderIngredientsGroupsHtml(parsed.ingredients);
+            }
+            if (instructionEl) {
+              instructionEl.innerHTML = parsed.bodyHtml;
+            }
+            bindInteractiveRecipeElements();
+            if (verHasPiragiCalc && typeof recalculatePiragiFn === "function") {
+              recalculatePiragiFn();
+            } else {
+              if (parsed.servings) baseServings = parsed.servings;
+              const activeScaleBtn = recipePage.querySelector(".scale-btn.active");
+              const factor = activeScaleBtn
+                ? parseFloat(activeScaleBtn.dataset.scale) || 1
+                : 1;
+              applyCurrentScaleFactor(factor);
+            }
+          } else {
+            if (parsed.servings && !hasCalculator) {
+              baseServings = parsed.servings;
+            }
+            if (ingredientsGroupsEl && parsed.ingredients.length > 0 && !hasCalculator) {
+              ingredientsGroupsEl.innerHTML = renderIngredientsGroupsHtml(parsed.ingredients);
+            }
+            if (instructionEl && !hasCalculator) {
+              instructionEl.innerHTML = parsed.bodyHtml;
+            }
 
-          // Re-apply active portion scale factor
-          if (!hasCalculator) {
-            const activeScaleBtn = recipePage.querySelector(".scale-btn.active");
-            const factor = activeScaleBtn
-              ? parseFloat(activeScaleBtn.dataset.scale) || 1
-              : 1;
-            applyCurrentScaleFactor(factor);
+            bindInteractiveRecipeElements();
+
+            // Re-apply active portion scale factor
+            if (!hasCalculator) {
+              const activeScaleBtn = recipePage.querySelector(".scale-btn.active");
+              const factor = activeScaleBtn
+                ? parseFloat(activeScaleBtn.dataset.scale) || 1
+                : 1;
+              applyCurrentScaleFactor(factor);
+            }
           }
 
           activeCommitSha = sha;
